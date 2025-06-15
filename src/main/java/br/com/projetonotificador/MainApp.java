@@ -2,10 +2,6 @@ package br.com.projetonotificador;
 
 import static javafx.application.Application.launch;
 
-/**
- * Hello world!
- *
- */
 public class MainApp
 {
     public static void main(String[] args) {
