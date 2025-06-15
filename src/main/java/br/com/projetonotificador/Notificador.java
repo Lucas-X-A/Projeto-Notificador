@@ -1,9 +1,7 @@
 package br.com.projetonotificador;
 
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.Toolkit;
-import java.awt.Image;
+import java.awt.*;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,19 +18,25 @@ public class Notificador {
 
         if (!compromissosDeHoje.isEmpty() && SystemTray.isSupported()) {
             for (Compromisso c : compromissosDeHoje) {
-                exibirNotificacao(c.getDescricao());
+                exibirNotificacao(c.getTitulo(), c.getDescricao());
             }
         }
     }
 
-    private void exibirNotificacao(String descricao) {
+    private void exibirNotificacao(String titulo, String descricao) {
         try {
             SystemTray tray = SystemTray.getSystemTray();
-            Image image = Toolkit.getDefaultToolkit().createImage("icon.png"); // Adicione um ícone ao seu projeto
+            URL imageUrl = Notificador.class.getResource("/images/icone_app.png");
+            if (imageUrl == null) {
+                System.err.println("Arquivo de recurso não encontrado: /images/icone_app.png.");
+                return;
+            }
+            Image image = Toolkit.getDefaultToolkit().createImage(imageUrl);
             TrayIcon trayIcon = new TrayIcon(image, "Alerta de Compromisso");
             trayIcon.setImageAutoSize(true);
+            trayIcon.setToolTip("Você tem um compromisso pra hoje: " + titulo + ": " + descricao);
             tray.add(trayIcon);
-            trayIcon.displayMessage("Lembrete de Compromisso!", descricao, TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage("Lembrete de Compromisso!", titulo, TrayIcon.MessageType.INFO);
         } catch (Exception e) {
             e.printStackTrace();
         }
