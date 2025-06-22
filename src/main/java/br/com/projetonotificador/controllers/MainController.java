@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 import br.com.projetonotificador.model.Compromisso;
@@ -138,6 +139,7 @@ public class MainController {
 
     private void atualizarListaCompromissos() {
         List<Compromisso> todos = gerenciador.carregarCompromissos();
+        todos.sort(Comparator.comparing(Compromisso::getData));
         compromissosVisiveis.setAll(todos);
     }
 
