@@ -29,8 +29,10 @@ public class MainApp extends Application {
             // Modo silencioso: apenas verifica e notifica
             System.out.println("Modo de verificação ativado...");
             Notificador notificador = new Notificador();
-            notificador.verificarEAlertar();
-            System.exit(0); // Fecha o programa após verificar
+            boolean notificou = notificador.verificarEAlertar();
+            if (!notificou) {
+                System.exit(0);
+            }
         } else {
             // Modo normal: abre a interface gráfica (JavaFX)
             launch(args);
