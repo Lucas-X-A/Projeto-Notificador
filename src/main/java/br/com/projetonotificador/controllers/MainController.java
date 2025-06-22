@@ -14,6 +14,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -40,20 +42,49 @@ public class MainController {
         compromissosVisiveis = FXCollections.observableArrayList();
         listViewCompromissos.setItems(compromissosVisiveis);
 
-        // Configura a CellFactory para personalizar a exibição de cada item
+        listViewCompromissos.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            // Se a seleção mudou, atualiza a lista
+            if (oldSelection != newSelection) {
+                listViewCompromissos.refresh();
+            }
+        });
+
+        // Configura a CellFactory
         listViewCompromissos.setCellFactory(listView -> new ListCell<Compromisso>() {
+            private final VBox vbox = new VBox();
             private final HBox hbox = new HBox();
-            private final Label label = new Label();
+            private final Label titleLabel = new Label();
+            private final Label detailsLabel = new Label();
             private final Pane pane = new Pane();
-            private final Button button = new Button("Editar");
+            private final Button editButton = new Button("Editar");
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
+                // Configuração do layout da célula
                 HBox.setHgrow(pane, Priority.ALWAYS);
-                hbox.getChildren().addAll(label, pane, button);
+                hbox.getChildren().addAll(titleLabel, pane, editButton);
                 hbox.setAlignment(Pos.CENTER);
 
-                button.setOnAction(event -> {
+                detailsLabel.setWrapText(true);
+                detailsLabel.setStyle("-fx-padding: 5 0 0 0;"); // Espaçamento acima da descrição
+
+                vbox.getChildren().addAll(hbox, detailsLabel);
+                
+                // Lógica para expandir/recolher ao clicar
+                this.setOnMouseClicked(event -> {
+                    if (isEmpty() || getItem() == null) return;
+
+                    // Se clicou no item já selecionado, limpa a seleção (recolhe)
+                    if (getListView().getSelectionModel().getSelectedItem() == getItem()) {
+                        getListView().getSelectionModel().clearSelection();
+                    } else { // Senão, seleciona o novo item (expande)
+                        getListView().getSelectionModel().select(getItem());
+                    }
+                });
+
+                editButton.setOnMouseClicked(mouseEvent -> mouseEvent.consume());
+
+                editButton.setOnAction(event -> {
                     Compromisso compromisso = getItem();
                     if (compromisso != null) {
                         abrirJanelaEdicao(compromisso);
@@ -64,26 +95,42 @@ public class MainController {
             @Override
             protected void updateItem(Compromisso compromisso, boolean empty) {
                 super.updateItem(compromisso, empty);
-
                 if (empty || compromisso == null) {
-                    setText(null);
-                    setGraphic(null); // Limpa o conteúdo gráfico da célula
+                    setGraphic(null);
+                    setStyle("");
                 } else {
-                    // Define o texto da Label dentro do HBox
+                    // Popula os dados
                     String dataFormatada = compromisso.getData().format(formatter);
-                    label.setText(dataFormatada + " - " + compromisso.getTitulo());
+                    titleLabel.setText(dataFormatada + " - " + compromisso.getTitulo());
+                    detailsLabel.setText("Detalhes: " + compromisso.getDescricao());
 
-                    // Define a visibilidade do botão com base nas condições
+                    // **CORREÇÃO: Define a cor do texto diretamente nos Labels**
+                    titleLabel.setTextFill(Color.BLACK);
+                    detailsLabel.setTextFill(Color.BLACK);
+
+                    // Mostra/esconde o botão de editar
                     boolean podeEditar = !compromisso.isConcluido() && !compromisso.getData().isBefore(LocalDate.now());
-                    button.setVisible(podeEditar);
+                    editButton.setVisible(podeEditar);
 
-                    // Define o HBox como o conteúdo gráfico da célula
-                    setGraphic(hbox);
-                    setText(null); // Limpa o texto padrão da célula para evitar duplicidade
+                    // Mostra/esconde a descrição baseando-se na seleção
+                    boolean isSelected = getListView().getSelectionModel().getSelectedItem() == compromisso;
+                    detailsLabel.setVisible(isSelected);
+                    detailsLabel.setManaged(isSelected);
+
+                    // Define um fundo customizado com uma borda inferior para separação
+                    String borderStyle = "-fx-border-width: 0 0 1 0; -fx-border-color: #e0e0e0;";
+
+                    // Define um fundo customizado (sem a cor do texto)
+                    if (getIndex() % 2 == 0) {
+                        setStyle("-fx-background-color: #fafafa;" + borderStyle); // Cor para linhas pares
+                    } else {
+                        setStyle("-fx-background-color: #ffffff;" + borderStyle); // Cor para linhas ímpares
+                    }
+
+                    setGraphic(vbox);
                 }
             }
         });
-
         atualizarListaCompromissos();
     }
 
