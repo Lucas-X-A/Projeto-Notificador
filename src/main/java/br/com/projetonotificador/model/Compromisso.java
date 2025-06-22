@@ -1,6 +1,7 @@
 package br.com.projetonotificador.model;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class Compromisso {
     private String titulo;
@@ -28,8 +29,24 @@ public class Compromisso {
 
     @Override
     public String toString() {
-        // Usado para exibição simples em listas
-        return data.toString() + " - " + titulo + " : " + descricao + (concluido ? " (Concluído)" : "");
+        return "Compromisso{" +
+                "titulo='" + titulo + '\'' +
+                ", data=" + data +
+                ", concluido=" + concluido +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Compromisso that = (Compromisso) o;
+        return concluido == that.concluido && Objects.equals(titulo, that.titulo) && Objects.equals(descricao, that.descricao) && Objects.equals(data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(titulo, descricao, data, concluido);
     }
 }
 

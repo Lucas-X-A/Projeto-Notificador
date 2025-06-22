@@ -26,13 +26,22 @@ public class AddCompromissoController {
 
     private Stage dialogStage;
     private GerenciadorCompromissos gerenciador;
+    private Compromisso compromissoParaEditar;
 
     public AddCompromissoController() {
         this.gerenciador = new GerenciadorCompromissos();
+        this.compromissoParaEditar = null;
     }
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
+    }
+
+    public void setCompromissoParaEditar(Compromisso compromisso) {
+        this.compromissoParaEditar = compromisso;
+        txtTitulo.setText(compromisso.getTitulo());
+        txtDescricao.setText(compromisso.getDescricao());
+        datePicker.setValue(compromisso.getData());
     }
 
     @FXML
@@ -50,11 +59,26 @@ public class AddCompromissoController {
             return;
         }
 
-        Compromisso novo = new Compromisso(titulo, descricao, data);
         List<Compromisso> todos = gerenciador.carregarCompromissos();
-        todos.add(novo);
-        gerenciador.salvarCompromissos(todos);
 
+        if (compromissoParaEditar == null) { // Modo de Adição
+            Compromisso novo = new Compromisso(titulo, descricao, data);
+            todos.add(novo);
+        } else { // Modo de Edição
+            int index = todos.indexOf(this.compromissoParaEditar);
+            if (index != -1) {
+                Compromisso aAtualizar = todos.get(index);
+                aAtualizar.setTitulo(titulo);
+                aAtualizar.setDescricao(descricao);
+                aAtualizar.setData(data);
+            } else {
+                // Opcional: Tratar erro se o compromisso não for encontrado
+                System.err.println("Erro: Compromisso a ser editado não encontrado na lista.");
+                return;
+            }
+        }
+
+        gerenciador.salvarCompromissos(todos);
         dialogStage.close();
     }
 }
