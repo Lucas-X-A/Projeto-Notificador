@@ -1,4 +1,4 @@
-package br.com.projetonotificador;
+package br.com.projetonotificador.model;
 
 import java.awt.*;
 import java.net.URL;
