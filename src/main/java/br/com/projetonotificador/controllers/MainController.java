@@ -6,11 +6,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -32,6 +35,12 @@ public class MainController {
 
     @FXML
     private ListView<Compromisso> listViewCompromissos;
+
+    @FXML
+    private BorderPane mainBorderPane;
+
+    @FXML
+    private HBox topButtonsBox;
 
     private GerenciadorCompromissos gerenciador;
     private ObservableList<Compromisso> compromissosVisiveis;
@@ -57,18 +66,38 @@ public class MainController {
             private final Label detailsLabel = new Label();
             private final Pane pane = new Pane();
             private final Button editButton = new Button("Editar");
+            private final Button concluirButton = new Button("Concluir");
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
                 // Configuração do layout da célula
                 HBox.setHgrow(pane, Priority.ALWAYS);
-                hbox.getChildren().addAll(titleLabel, pane, editButton);
+                hbox.getChildren().addAll(titleLabel, pane, editButton, concluirButton);
                 hbox.setAlignment(Pos.CENTER);
+                hbox.setSpacing(10);
 
                 detailsLabel.setWrapText(true);
                 detailsLabel.setStyle("-fx-padding: 5 0 0 0;"); // Espaçamento acima da descrição
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
+
+                // Lógica para o botão "Concluir"
+                concluirButton.setOnAction(event -> {
+                    Compromisso compromisso = getItem();
+                    if (compromisso != null) {
+                        // Exibe uma mensagem de confirmação
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Confirmar Conclusão");
+                        alert.setHeaderText("Concluir o compromisso?");
+                        alert.setContentText("Você tem certeza que deseja marcar '" + compromisso.getTitulo() + "' como concluído?");
+
+                        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                            gerenciador.concluirCompromisso(compromisso);
+                            atualizarListaCompromissos(); // Atualiza a lista principal
+                        }
+                    }
+                });
+
                 
                 // Lógica para expandir/recolher ao clicar
                 this.setOnMouseClicked(event -> {
@@ -83,6 +112,7 @@ public class MainController {
                 });
 
                 editButton.setOnMouseClicked(mouseEvent -> mouseEvent.consume());
+                concluirButton.setOnMouseClicked(mouseEvent -> mouseEvent.consume());
 
                 editButton.setOnAction(event -> {
                     Compromisso compromisso = getItem();
@@ -104,13 +134,14 @@ public class MainController {
                     titleLabel.setText(dataFormatada + " - " + compromisso.getTitulo());
                     detailsLabel.setText("Detalhes: " + compromisso.getDescricao());
 
-                    // **CORREÇÃO: Define a cor do texto diretamente nos Labels**
+                    // Define as cores do texto
                     titleLabel.setTextFill(Color.BLACK);
                     detailsLabel.setTextFill(Color.BLACK);
 
-                    // Mostra/esconde o botão de editar
+                    // Mostra/esconde os botões
                     boolean podeEditar = !compromisso.isConcluido() && !compromisso.getData().isBefore(LocalDate.now());
                     editButton.setVisible(podeEditar);
+                    concluirButton.setVisible(podeEditar);
 
                     // Mostra/esconde a descrição baseando-se na seleção
                     boolean isSelected = getListView().getSelectionModel().getSelectedItem() == compromisso;
@@ -160,6 +191,31 @@ public class MainController {
         }
     }
 
+    @FXML
+    private void onVerConcluidosClick() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/concluidos-view.fxml"));
+            BorderPane concluidosView = loader.load(); // Carrega a view dos concluídos
+
+            // Passa uma referência deste MainController para o ConcluidosController
+            ConcluidosController controller = loader.getController();
+            controller.setMainController(this);
+
+            // Substitui o centro da tela principal pela nova view
+            mainBorderPane.setCenter(concluidosView);
+            topButtonsBox.setVisible(false); // Esconde os botões do topo
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void mostrarCompromissosAtivos() {
+        mainBorderPane.setCenter(listViewCompromissos); 
+        topButtonsBox.setVisible(true); 
+        atualizarListaCompromissos(); 
+    }
+
     private void abrirJanelaEdicao(Compromisso compromisso) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/add-compromisso-view.fxml"));
@@ -186,6 +242,7 @@ public class MainController {
 
     private void atualizarListaCompromissos() {
         List<Compromisso> todos = gerenciador.carregarCompromissos();
+        todos.removeIf(Compromisso::isConcluido);
         todos.sort(Comparator.comparing(Compromisso::getData));
         compromissosVisiveis.setAll(todos);
     }

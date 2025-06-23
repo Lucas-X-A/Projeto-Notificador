@@ -5,16 +5,22 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.MainController">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.MainController">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <top>
       <VBox alignment="CENTER" prefWidth="100.0" spacing="10.0">
          <children>
-            <Button fx:id="btnAdicionar" mnemonicParsing="false" onAction="#onAdicionarCompromissoClick" text="Adicionar Compromisso" />
+            <HBox fx:id="topButtonsBox" alignment="CENTER" spacing="20.0">
+               <children>
+                  <Button fx:id="btnAdicionar" mnemonicParsing="false" onAction="#onAdicionarCompromissoClick" text="Adicionar Compromisso" />
+                  <Button fx:id="btnVerConcluidos" mnemonicParsing="false" onAction="#onVerConcluidosClick" text="Ver Concluídos" />
+               </children>
+            </HBox>
          </children>
          <padding>
             <Insets bottom="10.0" top="10.0" />
@@ -24,7 +30,7 @@
    <center>
       <ListView fx:id="listViewCompromissos" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <placeholder>
-            <Label text="Nenhum compromisso foi adicionado ainda." />
+            <Label text="Nenhum compromisso ativo." />
          </placeholder>
       </ListView>
    </center>
