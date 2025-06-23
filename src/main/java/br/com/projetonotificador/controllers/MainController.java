@@ -142,9 +142,13 @@ public class MainController {
                     detailsLabel.setTextFill(Color.BLACK);
 
                     // Mostra/esconde os botões
+                    // Apenas compromissos futuros e não concluídos podem ser editados.
                     boolean podeEditar = !compromisso.isConcluido() && !compromisso.getData().isBefore(LocalDate.now());
                     editButton.setVisible(podeEditar);
-                    concluirButton.setVisible(podeEditar);
+
+                    // Qualquer compromisso não concluído pode ser marcado como tal, mesmo que já tenha passado.
+                    boolean podeConcluir = !compromisso.isConcluido();
+                    concluirButton.setVisible(podeConcluir);
 
                     // Mostra/esconde a descrição baseando-se na seleção
                     boolean isSelected = getListView().getSelectionModel().getSelectedItem() == compromisso;
