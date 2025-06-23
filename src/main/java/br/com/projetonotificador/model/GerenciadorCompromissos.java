@@ -83,6 +83,23 @@ public class GerenciadorCompromissos {
         }
     }
 
+    /**
+     * Marca uma instância específica de um compromisso recorrente como concluída.
+     * @param compromissoPai O compromisso original.
+     * @param dataDaInstancia A data da ocorrência a ser concluída.
+     */
+    public void concluirInstancia(Compromisso compromissoPai, LocalDate dataDaInstancia) {
+        List<Compromisso> ativos = carregarCompromissos();
+        // Encontra o compromisso original na lista pelo ID
+        ativos.stream()
+              .filter(c -> c.getId().equals(compromissoPai.getId()))
+              .findFirst()
+              .ifPresent(c -> {
+                  c.adicionarDataConcluida(dataDaInstancia);
+                  salvarCompromissos(ativos);
+              });
+    }
+
     public void reativarCompromisso(Compromisso compromissoParaReativar) {
         List<Compromisso> ativos = carregarCompromissos();
         List<Compromisso> concluidos = carregarCompromissosConcluidos();

@@ -25,16 +25,19 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import br.com.projetonotificador.model.Compromisso;
+import br.com.projetonotificador.model.CompromissoInstancia;
 import br.com.projetonotificador.model.GerenciadorCompromissos;
+import br.com.projetonotificador.model.TipoRecorrencia;
 
 public class MainController {
 
     @FXML
-    private ListView<Compromisso> listViewCompromissos;
+    private ListView<CompromissoInstancia> listViewCompromissos;
 
     @FXML
     private BorderPane mainBorderPane;
@@ -43,7 +46,7 @@ public class MainController {
     private HBox topButtonsBox;
 
     private GerenciadorCompromissos gerenciador;
-    private ObservableList<Compromisso> compromissosVisiveis;
+    private ObservableList<CompromissoInstancia> compromissosVisiveis;
 
     @FXML
     public void initialize() {
@@ -59,7 +62,7 @@ public class MainController {
         });
 
         // Configura a CellFactory
-        listViewCompromissos.setCellFactory(listView -> new ListCell<Compromisso>() {
+        listViewCompromissos.setCellFactory(listView -> new ListCell<CompromissoInstancia>() {
             private final VBox vbox = new VBox();
             private final HBox hbox = new HBox();
             private final Label titleLabel = new Label();
@@ -83,29 +86,30 @@ public class MainController {
 
                 // Lógica para o botão "Concluir"
                 concluirButton.setOnAction(event -> {
-                    Compromisso compromisso = getItem();
-                    if (compromisso != null) {
-                        // Exibe uma mensagem de confirmação
+                    CompromissoInstancia instancia = getItem();
+                    if (instancia != null) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Conclusão");
                         alert.setHeaderText("Concluir o compromisso?");
-                        alert.setContentText("Você tem certeza que deseja marcar '" + compromisso.getTitulo() + "' como concluído?");
+                        alert.setContentText("Você tem certeza que deseja marcar '" + instancia.getTitulo() + "' como concluído?");
                         
                         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
 
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                            gerenciador.concluirCompromisso(compromisso);
-                            atualizarListaCompromissos(); // Atualiza a lista principal
+                            if (instancia.getCompromissoPai().getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
+                                gerenciador.concluirCompromisso(instancia.getCompromissoPai());
+                            } else {
+                                gerenciador.concluirInstancia(instancia.getCompromissoPai(), instancia.getDataDaInstancia());
+                            }
+                            atualizarListaCompromissos();
                         }
                     }
                 });
-
                 
                 // Lógica para expandir/recolher ao clicar
                 this.setOnMouseClicked(event -> {
                     if (isEmpty() || getItem() == null) return;
-
                     // Se clicou no item já selecionado, limpa a seleção (recolhe)
                     if (getListView().getSelectionModel().getSelectedItem() == getItem()) {
                         getListView().getSelectionModel().clearSelection();
@@ -118,24 +122,24 @@ public class MainController {
                 concluirButton.setOnMouseClicked(mouseEvent -> mouseEvent.consume());
 
                 editButton.setOnAction(event -> {
-                    Compromisso compromisso = getItem();
-                    if (compromisso != null) {
-                        abrirJanelaEdicao(compromisso);
+                    CompromissoInstancia instancia = getItem();
+                    if (instancia != null) {
+                        abrirJanelaEdicao(instancia.getCompromissoPai());
                     }
                 });
             }
 
             @Override
-            protected void updateItem(Compromisso compromisso, boolean empty) {
-                super.updateItem(compromisso, empty);
-                if (empty || compromisso == null) {
+            protected void updateItem(CompromissoInstancia instancia, boolean empty) {
+                super.updateItem(instancia, empty);
+                if (empty || instancia == null) {
                     setGraphic(null);
                     setStyle("");
                 } else {
                     // Popula os dados
-                    String dataFormatada = compromisso.getData().format(formatter);
-                    titleLabel.setText(dataFormatada + " - " + compromisso.getTitulo());
-                    detailsLabel.setText("Detalhes: " + compromisso.getDescricao());
+                    String dataFormatada = instancia.getDataDaInstancia().format(formatter);
+                    titleLabel.setText(dataFormatada + " - " + instancia.getTitulo());
+                    detailsLabel.setText("Detalhes: " + instancia.getDescricao());
 
                     // Define as cores do texto
                     titleLabel.setTextFill(Color.BLACK);
@@ -143,15 +147,12 @@ public class MainController {
 
                     // Mostra/esconde os botões
                     // Apenas compromissos futuros e não concluídos podem ser editados.
-                    boolean podeEditar = !compromisso.isConcluido() && !compromisso.getData().isBefore(LocalDate.now());
+                    boolean podeEditar = !instancia.getDataDaInstancia().isBefore(LocalDate.now());
                     editButton.setVisible(podeEditar);
-
-                    // Qualquer compromisso não concluído pode ser marcado como tal, mesmo que já tenha passado.
-                    boolean podeConcluir = !compromisso.isConcluido();
-                    concluirButton.setVisible(podeConcluir);
+                    concluirButton.setVisible(true); // O botão de concluir é sempre visível para instâncias ativas
 
                     // Mostra/esconde a descrição baseando-se na seleção
-                    boolean isSelected = getListView().getSelectionModel().getSelectedItem() == compromisso;
+                    boolean isSelected = getListView().getSelectionModel().getSelectedItem() == instancia;
                     detailsLabel.setVisible(isSelected);
                     detailsLabel.setManaged(isSelected);
 
@@ -174,28 +175,7 @@ public class MainController {
 
     @FXML
     private void onAdicionarCompromissoClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/add-compromisso-view.fxml"));
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Adicionar Novo Compromisso");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(listViewCompromissos.getScene().getWindow());
-            dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
-            Scene scene = new Scene(loader.load());
-            dialogStage.setScene(scene);
-
-            // Passa o palco para o controlador para que ele possa se fechar
-            AddCompromissoController controller = loader.getController();
-            controller.setDialogStage(dialogStage);
-
-            dialogStage.showAndWait();
-
-            // Atualiza a lista após o diálogo ser fechado
-            atualizarListaCompromissos();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        abrirJanelaEdicao(null); // Passa null para indicar que é um novo compromisso
     }
 
     @FXML
@@ -223,11 +203,11 @@ public class MainController {
         atualizarListaCompromissos(); 
     }
 
-    private void abrirJanelaEdicao(Compromisso compromisso) {
+    private void abrirJanelaEdicao(Compromisso compromisso) { // Agora aceita um compromisso nulo (para adição)
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/add-compromisso-view.fxml"));
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Editar Compromisso");
+            dialogStage.setTitle(compromisso == null ? "Adicionar Novo Compromisso" : "Editar Compromisso");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(listViewCompromissos.getScene().getWindow());
             dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
@@ -236,7 +216,9 @@ public class MainController {
 
             AddCompromissoController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setCompromissoParaEditar(compromisso);
+            if (compromisso != null) { // Se for edição, passa o objeto
+                controller.setCompromissoParaEditar(compromisso);
+            }
 
             dialogStage.showAndWait();
 
@@ -248,10 +230,42 @@ public class MainController {
     }
 
     private void atualizarListaCompromissos() {
-        List<Compromisso> todos = gerenciador.carregarCompromissos();
-        todos.removeIf(Compromisso::isConcluido);
-        todos.sort(Comparator.comparing(Compromisso::getData));
-        compromissosVisiveis.setAll(todos);
+        List<Compromisso> compromissosBase = gerenciador.carregarCompromissos();
+        List<CompromissoInstancia> instanciasAtivas = new ArrayList<>();
+        LocalDate hoje = LocalDate.now();
+        LocalDate limiteGeracao = hoje.plusMonths(3); // Gera ocorrências para até 3 meses no futuro
+
+        for (Compromisso c : compromissosBase) {
+            if (c.isConcluido()) continue;
+
+            if (c.getRecorrencia() == null || c.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
+                if (!c.getData().isBefore(hoje)) {
+                    instanciasAtivas.add(new CompromissoInstancia(c, c.getData()));
+                }
+            } else {
+                LocalDate dataFim = c.getDataFimRecorrencia();
+                if (dataFim == null) continue;
+
+                LocalDate dataIteracao = c.getData();
+                while (!dataIteracao.isAfter(dataFim) && !dataIteracao.isAfter(limiteGeracao)) {
+                    // Adiciona a instância apenas se ela não for anterior a hoje e não estiver na lista de concluídas
+                    if (!dataIteracao.isBefore(hoje) && (c.getDatasConcluidas() == null || !c.getDatasConcluidas().contains(dataIteracao))) {
+                        instanciasAtivas.add(new CompromissoInstancia(c, dataIteracao));
+                    }
+
+                    if (c.getRecorrencia() == TipoRecorrencia.SEMANAL) {
+                        dataIteracao = dataIteracao.plusWeeks(1);
+                    } else if (c.getRecorrencia() == TipoRecorrencia.MENSAL) {
+                        dataIteracao = dataIteracao.plusMonths(1);
+                    } else {
+                        break; // Segurança para evitar loop infinito
+                    }
+                }
+            }
+        }
+
+        instanciasAtivas.sort(Comparator.comparing(CompromissoInstancia::getDataDaInstancia));
+        compromissosVisiveis.setAll(instanciasAtivas);
     }
 
 }
