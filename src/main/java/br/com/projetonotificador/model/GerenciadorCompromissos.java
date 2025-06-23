@@ -72,7 +72,10 @@ public class GerenciadorCompromissos {
         List<Compromisso> ativos = carregarCompromissos();
         List<Compromisso> concluidos = carregarCompromissosConcluidos();
 
-        if (ativos.remove(compromissoParaConcluir)) {
+        // Remove o compromisso da lista de ativos procurando pelo ID único.
+        boolean removido = ativos.removeIf(c -> c.getId().equals(compromissoParaConcluir.getId()));
+
+        if (removido) {
             compromissoParaConcluir.setConcluido(true);
             concluidos.add(compromissoParaConcluir);
             salvarCompromissos(ativos);
@@ -84,7 +87,10 @@ public class GerenciadorCompromissos {
         List<Compromisso> ativos = carregarCompromissos();
         List<Compromisso> concluidos = carregarCompromissosConcluidos();
 
-        if (concluidos.remove(compromissoParaReativar)) {
+        // Remove o compromisso da lista de concluídos procurando pelo ID único.
+        boolean removido = concluidos.removeIf(c -> c.getId().equals(compromissoParaReativar.getId()));
+
+        if (removido) {
             compromissoParaReativar.setConcluido(false);
             ativos.add(compromissoParaReativar);
             salvarCompromissos(ativos);

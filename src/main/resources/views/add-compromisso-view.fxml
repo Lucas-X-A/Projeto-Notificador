@@ -2,20 +2,25 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="350.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.AddCompromissoController">
+<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.AddCompromissoController">
    <children>
       <Label text="Título:" />
       <TextField fx:id="txtTitulo" promptText="Título do compromisso" />
       <Label text="Descrição:" />
       <TextArea fx:id="txtDescricao" prefHeight="100.0" prefWidth="200.0" promptText="Descrição detalhada" />
-      <Label text="Data:" />
+      <Label text="Data de Início:" />
       <DatePicker fx:id="datePicker" promptText="Data do compromisso" />
+      <Label text="Recorrência:" />
+      <ComboBox fx:id="comboRecorrencia" prefWidth="150.0" />
+      <Label fx:id="lblDataFim" text="Repetir até:" />
+      <DatePicker fx:id="datePickerFim" promptText="Data final da recorrência" />
       <Button fx:id="btnSalvar" mnemonicParsing="false" onAction="#onSalvarClick" text="Salvar" />
    </children>
    <padding>
