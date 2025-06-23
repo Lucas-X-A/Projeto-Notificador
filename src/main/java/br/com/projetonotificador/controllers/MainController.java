@@ -90,6 +90,9 @@ public class MainController {
                         alert.setTitle("Confirmar Conclusão");
                         alert.setHeaderText("Concluir o compromisso?");
                         alert.setContentText("Você tem certeza que deseja marcar '" + compromisso.getTitulo() + "' como concluído?");
+                        
+                        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
 
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                             gerenciador.concluirCompromisso(compromisso);

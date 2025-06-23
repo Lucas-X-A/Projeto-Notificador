@@ -12,10 +12,14 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -89,8 +93,17 @@ public class ConcluidosController {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Remoção");
                         alert.setHeaderText("Remover permanentemente o compromisso?");
-                        alert.setContentText("Esta ação não pode ser desfeita.\n\nTítulo: " + compromisso.getTitulo());
 
+                        Text boldText = new Text("Esta ação não pode ser desfeita.\n\n");
+                        boldText.setStyle("-fx-font-weight: bold;");
+                        Text regularText = new Text("Título: " + compromisso.getTitulo());
+                        TextFlow textFlow = new TextFlow(boldText, regularText);
+                        
+                        alert.getDialogPane().setContent(textFlow);
+
+                        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
+                        
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                             List<Compromisso> concluidos = gerenciador.carregarCompromissosConcluidos();
                             concluidos.remove(compromisso);
