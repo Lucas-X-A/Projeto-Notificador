@@ -172,7 +172,7 @@ public class ConcluidosController {
 
     private void atualizarListaConcluidos() {
         List<Compromisso> concluidos = gerenciador.carregarCompromissosConcluidos();
-        concluidos.sort(Comparator.comparing(Compromisso::getData).reversed());
+        concluidos.sort(Comparator.comparing(Compromisso::getData));
         compromissosConcluidosVisiveis.setAll(concluidos);
     }
 }
