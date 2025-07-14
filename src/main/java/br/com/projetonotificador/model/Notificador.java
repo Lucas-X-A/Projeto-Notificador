@@ -20,6 +20,7 @@ public class Notificador {
 
     private final GerenciadorCompromissos gerenciador;
     private static TrayIcon trayIcon; // Ícone estático para persistir
+    private static boolean isInfoWindowShowing = false;
 
 
     public Notificador() {
@@ -127,23 +128,35 @@ public class Notificador {
         }
     }
 
-    private void exibirDetalhes(List<CompromissoInstancia> instancias) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private synchronized void exibirDetalhes(List<CompromissoInstancia> instancias) {
+        // Se a janela já estiver aberta, não faz nada.
+        if (isInfoWindowShowing) {
+            return;
+        }
+
+        try {
+            isInfoWindowShowing = true; // Ativa a trava
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            
+            // Constrói uma única string com todos os compromissos do dia
+            String mensagemDetalhada = instancias.stream()
+                .map(inst -> String.format(
+                    "Título: %s\nData: %s\nDescrição: %s",
+                    inst.getTitulo(),
+                    inst.getDataDaInstancia().format(formatter),
+                    inst.getDescricao()
+                ))
+                .collect(Collectors.joining("\n\n---\n\n"));
+
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
+            Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            ImageIcon finalIcon = new ImageIcon(resizedImage);
+
+            JOptionPane.showMessageDialog(null, mensagemDetalhada, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
         
-        // Constrói uma única string com todos os compromissos do dia
-        String mensagemDetalhada = instancias.stream()
-            .map(inst -> String.format(
-                "Título: %s\nData: %s\nDescrição: %s",
-                inst.getTitulo(),
-                inst.getDataDaInstancia().format(formatter),
-                inst.getDescricao()
-            ))
-            .collect(Collectors.joining("\n\n---\n\n"));
-
-        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
-        Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
-        ImageIcon finalIcon = new ImageIcon(resizedImage);
-
-        JOptionPane.showMessageDialog(null, mensagemDetalhada, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
+        } finally {
+            isInfoWindowShowing = false; // Libera a trava quando a janela é fechada
+        }
     }
 }
