@@ -8,6 +8,7 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane; 
@@ -21,20 +22,58 @@ public class Notificador {
     }
 
     public boolean verificarEAlertar() {
-        List<Compromisso> compromissos = gerenciador.carregarCompromissos();
+        List<Compromisso> compromissosBase = gerenciador.carregarCompromissos();
+        List<CompromissoInstancia> instanciasDeHoje = new ArrayList<>();
         LocalDate hoje = LocalDate.now();
-        boolean notificacaoExibida = false; // Flag para rastrear se mostramos algo
 
-        for (Compromisso c : compromissos) {
-            if (c.getData().equals(hoje) && !c.isConcluido()) {
-                exibirNotificacao(c);
-                notificacaoExibida = true; // Marcamos que uma notificação foi exibida
+        for (Compromisso c : compromissosBase) {
+            if (c.isConcluido()) continue;
+
+            // Lógica para compromissos não recorrentes
+            if (c.getRecorrencia() == null || c.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
+                if (c.getData().equals(hoje)) {
+                    instanciasDeHoje.add(new CompromissoInstancia(c, c.getData()));
+                }
             }
+            // Lógica para compromissos recorrentes
+            else {
+                LocalDate dataFim = c.getDataFimRecorrencia();
+                if (dataFim == null || hoje.isAfter(dataFim)) continue;
+
+                LocalDate dataIteracao = c.getData();
+                while (!dataIteracao.isAfter(dataFim)) {
+                    // Otimização: se a data de iteração já passou de hoje, podemos parar de verificar este compromisso
+                    if (dataIteracao.isAfter(hoje)) {
+                        break; 
+                    }
+                    
+                    // Verifica se a iteração é hoje e se esta data específica não foi concluída
+                    if (dataIteracao.equals(hoje) && (c.getDatasConcluidas() == null || !c.getDatasConcluidas().contains(dataIteracao))) {
+                        instanciasDeHoje.add(new CompromissoInstancia(c, dataIteracao));
+                        break; // Encontrou a ocorrência de hoje, pode ir para o próximo compromisso
+                    }
+
+                    // Avança para a próxima data de recorrência
+                    if (c.getRecorrencia() == TipoRecorrencia.SEMANAL) {
+                        dataIteracao = dataIteracao.plusWeeks(1);
+                    } else if (c.getRecorrencia() == TipoRecorrencia.MENSAL) {
+                        dataIteracao = dataIteracao.plusMonths(1);
+                    } else {
+                        break; // Segurança
+                    }
+                }
+            } 
         }
-        return notificacaoExibida; // Retornamos o resultado
+
+        // Exibe uma notificação para cada instância encontrada para hoje
+        for (CompromissoInstancia instancia : instanciasDeHoje) {
+            exibirNotificacao(instancia);
+        }
+        
+        return !instanciasDeHoje.isEmpty();
     }
 
-    private void exibirNotificacao(Compromisso compromisso) {
+    private void exibirNotificacao(CompromissoInstancia compromisso) {
         if (!SystemTray.isSupported()) {
             System.err.println("System tray não é suportado.");
             return;
@@ -58,7 +97,7 @@ public class Notificador {
                 String mensagemDetalhada = String.format(
                     "Título: %s\nData: %s\n\nDescrição:\n%s",
                     compromisso.getTitulo(),
-                    compromisso.getData().format(formatter),
+                    compromisso.getDataDaInstancia().format(formatter),
                     compromisso.getDescricao()
                 );
                 
