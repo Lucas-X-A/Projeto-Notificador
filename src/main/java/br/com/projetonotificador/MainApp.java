@@ -30,6 +30,8 @@ public class MainApp extends Application {
             System.out.println("Modo de verificação ativado...");
             Notificador notificador = new Notificador();
             boolean notificou = notificador.verificarEAlertar();
+            
+            // Se não notificou, o programa pode fechar.
             if (!notificou) {
                 System.exit(0);
             }

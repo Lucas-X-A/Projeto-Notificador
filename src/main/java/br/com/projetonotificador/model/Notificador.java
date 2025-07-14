@@ -5,17 +5,22 @@ import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane; 
 
 public class Notificador {
 
     private final GerenciadorCompromissos gerenciador;
+    private static TrayIcon trayIcon; // Ícone estático para persistir
+
 
     public Notificador() {
         this.gerenciador = new GerenciadorCompromissos();
@@ -42,7 +47,7 @@ public class Notificador {
 
                 LocalDate dataIteracao = c.getData();
                 while (!dataIteracao.isAfter(dataFim)) {
-                    // Otimização: se a data de iteração já passou de hoje, podemos parar de verificar este compromisso
+                    // Se a data de iteração já passou de hoje, podemos parar de verificar este compromisso
                     if (dataIteracao.isAfter(hoje)) {
                         break; 
                     }
@@ -59,73 +64,86 @@ public class Notificador {
                     } else if (c.getRecorrencia() == TipoRecorrencia.MENSAL) {
                         dataIteracao = dataIteracao.plusMonths(1);
                     } else {
-                        break; // Segurança
+                        break; 
                     }
                 }
             } 
         }
 
-        // Exibe uma notificação para cada instância encontrada para hoje
-        for (CompromissoInstancia instancia : instanciasDeHoje) {
-            exibirNotificacao(instancia);
+        if (!instanciasDeHoje.isEmpty()) {
+            criarIconeNaBandeja(instanciasDeHoje);
+            return true;
         }
         
-        return !instanciasDeHoje.isEmpty();
+        return false;
     }
 
-    private void exibirNotificacao(CompromissoInstancia compromisso) {
+    private void criarIconeNaBandeja(List<CompromissoInstancia> instancias) {
         if (!SystemTray.isSupported()) {
             System.err.println("System tray não é suportado.");
+            return;
+        }
+
+        // Se o ícone já existe, não faz nada.
+        if (trayIcon != null) {
             return;
         }
 
         try {
             SystemTray tray = SystemTray.getSystemTray();
             Image image = Toolkit.getDefaultToolkit().createImage(getClass().getResource("/images/icone_app.png"));
-            TrayIcon trayIcon = new TrayIcon(image, "Alerta de Compromisso");
+            trayIcon = new TrayIcon(image, "Alerta de Compromissos");
             trayIcon.setImageAutoSize(true);
 
-            // Remove listeners antigos para evitar múltiplas janelas
-            for (ActionListener listener : trayIcon.getActionListeners()) {
-                trayIcon.removeActionListener(listener);
-            }
+            // Ação ao clicar na notificação
+            trayIcon.addActionListener(e -> exibirDetalhes(instancias));
 
-            // 1. Adiciona um "ouvinte de ação" para quando o balão for clicado
-            trayIcon.addActionListener(e -> {
-                // 2. Formata a data e cria a mensagem detalhada
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                String mensagemDetalhada = String.format(
-                    "Título: %s\nData: %s\n\nDescrição:\n%s",
-                    compromisso.getTitulo(),
-                    compromisso.getDataDaInstancia().format(formatter),
-                    compromisso.getDescricao()
-                );
-                
-                // Carrega a imagem original
-                ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
-                // Redimensiona a imagem para um tamanho adequado (ex: 32x32 pixels)
-                Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
-                // Cria um novo ImageIcon com a imagem redimensionada
-                ImageIcon finalIcon = new ImageIcon(resizedImage);
-
-                // 3. Exibe uma janela de diálogo (JOptionPane) com o ícone redimensionado
-                JOptionPane.showMessageDialog(null, mensagemDetalhada, "Detalhes do Compromisso", JOptionPane.PLAIN_MESSAGE, finalIcon);
-
-                // 4. Remove o ícone da bandeja do sistema para limpeza
-                tray.remove(trayIcon);
+            // Ação ao clicar no ícone na bandeja do sistema
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) { 
+                    if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
+                        exibirDetalhes(instancias);
+                    }
+                }
             });
 
             tray.add(trayIcon);
-
-            // A mensagem inicial agora é um convite para clicar
+        
+            // Exibe a notificação inicial (o balão)
+            String tituloNotificacao = "Você tem " + instancias.size() + " compromisso(s) hoje.";
+            if (instancias.size() == 1) {
+                tituloNotificacao = "Compromisso para Hoje: " + instancias.get(0).getTitulo();
+            }
+            
             trayIcon.displayMessage(
-                "Compromisso para Hoje: " + compromisso.getTitulo(),
-                "Clique aqui para ver os detalhes.",
+                tituloNotificacao,
+                "Clique no ícone para ver os detalhes.",
                 TrayIcon.MessageType.INFO
             );
 
         } catch (AWTException e) {
             e.printStackTrace();
         }
+    }
+
+    private void exibirDetalhes(List<CompromissoInstancia> instancias) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        // Constrói uma única string com todos os compromissos do dia
+        String mensagemDetalhada = instancias.stream()
+            .map(inst -> String.format(
+                "Título: %s\nData: %s\nDescrição: %s",
+                inst.getTitulo(),
+                inst.getDataDaInstancia().format(formatter),
+                inst.getDescricao()
+            ))
+            .collect(Collectors.joining("\n\n---\n\n"));
+
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
+        Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+        ImageIcon finalIcon = new ImageIcon(resizedImage);
+
+        JOptionPane.showMessageDialog(null, mensagemDetalhada, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
     }
 }
