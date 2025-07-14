@@ -1,7 +1,9 @@
 package br.com.projetonotificador.controllers;
 
 import br.com.projetonotificador.model.Compromisso;
+import br.com.projetonotificador.model.CompromissoInstancia;
 import br.com.projetonotificador.model.GerenciadorCompromissos;
+import br.com.projetonotificador.model.TipoRecorrencia;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,19 +23,21 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class ConcluidosController {
 
     @FXML
-    private ListView<Compromisso> listViewConcluidos;
+    private ListView<CompromissoInstancia> listViewConcluidos;
 
     private MainController mainController;
     private GerenciadorCompromissos gerenciador;
-    private ObservableList<Compromisso> compromissosConcluidosVisiveis;
-
+    private ObservableList<CompromissoInstancia> compromissosConcluidosVisiveis;
+    
     @FXML
     public void initialize() {
         gerenciador = new GerenciadorCompromissos();
@@ -47,7 +51,7 @@ public class ConcluidosController {
             }
         });
 
-        listViewConcluidos.setCellFactory(listView -> new ListCell<Compromisso>() {
+        listViewConcluidos.setCellFactory(listView -> new ListCell<CompromissoInstancia>() {
             private final VBox vbox = new VBox();
             private final HBox hbox = new HBox();
             private final Label titleLabel = new Label();
@@ -80,23 +84,29 @@ public class ConcluidosController {
                 });
 
                 reativarButton.setOnAction(event -> {
-                    Compromisso compromisso = getItem();
-                    if (compromisso != null) {
-                        gerenciador.reativarCompromisso(compromisso);
+                    CompromissoInstancia instancia = getItem();
+                    if (instancia != null) {
+                        Compromisso pai = instancia.getCompromissoPai();
+                        if (pai.isConcluido()) { // É um compromisso totalmente concluído
+                            gerenciador.reativarCompromisso(pai);
+                        } else { // É uma instância de um compromisso recorrente
+                            gerenciador.reativarInstancia(pai, instancia.getDataDaInstancia());
+                        }
                         atualizarListaConcluidos();
                     }
                 });
 
                 removerButton.setOnAction(event -> {
-                    Compromisso compromisso = getItem();
-                    if (compromisso != null) {
+                    CompromissoInstancia instancia = getItem();
+                    // Adiciona uma verificação para garantir que só removemos compromissos totalmente concluídos
+                    if (instancia != null && instancia.getCompromissoPai().isConcluido()) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Remoção");
                         alert.setHeaderText("Remover permanentemente o compromisso?");
 
                         Text boldText = new Text("Esta ação não pode ser desfeita.\n\n");
                         boldText.setStyle("-fx-font-weight: bold;");
-                        Text regularText = new Text("Título: " + compromisso.getTitulo());
+                        Text regularText = new Text("Título: " + instancia.getTitulo());
                         TextFlow textFlow = new TextFlow(boldText, regularText);
                         
                         alert.getDialogPane().setContent(textFlow);
@@ -106,7 +116,7 @@ public class ConcluidosController {
                         
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                             List<Compromisso> concluidos = gerenciador.carregarCompromissosConcluidos();
-                            concluidos.remove(compromisso);
+                            concluidos.removeIf(c -> c.getId().equals(instancia.getCompromissoPai().getId()));
                             gerenciador.salvarCompromissosConcluidos(concluidos);
                             atualizarListaConcluidos();
                         }
@@ -119,23 +129,26 @@ public class ConcluidosController {
             }
 
             @Override
-            protected void updateItem(Compromisso compromisso, boolean empty) {
-                super.updateItem(compromisso, empty);
-                if (empty || compromisso == null) {
+            protected void updateItem(CompromissoInstancia instancia, boolean empty) {
+                super.updateItem(instancia, empty);
+                if (empty || instancia == null) {
                     setGraphic(null);
                     setStyle("");
                 } else {
                     // Popula os dados
-                    String dataFormatada = compromisso.getData().format(formatter);
-                    titleLabel.setText(dataFormatada + " - " + compromisso.getTitulo());
-                    detailsLabel.setText("Detalhes: " + compromisso.getDescricao());
+                    String dataFormatada = instancia.getDataDaInstancia().format(formatter);
+                    titleLabel.setText(dataFormatada + " - " + instancia.getTitulo());
+                    detailsLabel.setText("Detalhes: " + instancia.getDescricao());
+
+                    // O botão de remover só é visível para compromissos que foram totalmente concluídos
+                    removerButton.setVisible(instancia.getCompromissoPai().isConcluido());
 
                     // Estilo para indicar que está concluído
                     titleLabel.setStyle("-fx-strikethrough: true; -fx-text-fill: gray;");
                     detailsLabel.setStyle("-fx-text-fill: gray;");
 
                     // Mostra/esconde a descrição baseando-se na seleção
-                    boolean isSelected = getListView().getSelectionModel().getSelectedItem() == compromisso;
+                    boolean isSelected = getListView().getSelectionModel().getSelectedItem() == instancia;
                     detailsLabel.setVisible(isSelected);
                     detailsLabel.setManaged(isSelected);
 
@@ -171,8 +184,28 @@ public class ConcluidosController {
     }
 
     private void atualizarListaConcluidos() {
-        List<Compromisso> concluidos = gerenciador.carregarCompromissosConcluidos();
-        concluidos.sort(Comparator.comparing(Compromisso::getData));
-        compromissosConcluidosVisiveis.setAll(concluidos);
+        List<CompromissoInstancia> todasAsInstanciasConcluidas = new ArrayList<>();
+
+        // 1. Carrega os compromissos que foram totalmente concluídos
+        List<Compromisso> concluidosTotalmente = gerenciador.carregarCompromissosConcluidos();
+        for (Compromisso c : concluidosTotalmente) {
+            todasAsInstanciasConcluidas.add(new CompromissoInstancia(c, c.getData()));
+        }
+
+        // 2. Carrega os compromissos ativos para encontrar instâncias concluídas de tarefas recorrentes
+        List<Compromisso> ativos = gerenciador.carregarCompromissos();
+        for (Compromisso c : ativos) {
+            if (c.getRecorrencia() != TipoRecorrencia.NAO_RECORRENTE && c.getDatasConcluidas() != null) {
+                for (LocalDate dataConcluida : c.getDatasConcluidas()) {
+                    todasAsInstanciasConcluidas.add(new CompromissoInstancia(c, dataConcluida));
+                }
+            }
+        }
+
+        // 3. Ordena a lista combinada por data
+        todasAsInstanciasConcluidas.sort(Comparator.comparing(CompromissoInstancia::getDataDaInstancia));
+
+        // 4. Atualiza a UI
+        compromissosConcluidosVisiveis.setAll(todasAsInstanciasConcluidas);
     }
 }

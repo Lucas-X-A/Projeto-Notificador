@@ -114,4 +114,22 @@ public class GerenciadorCompromissos {
             salvarCompromissosConcluidos(concluidos);
         }
     }
+
+    /**
+     * Reativa uma instância específica de um compromisso recorrente, removendo-a da lista de datas concluídas.
+     * @param compromissoPai O compromisso original.
+     * @param dataDaInstancia A data da ocorrência a ser reativada.
+     */
+    public void reativarInstancia(Compromisso compromissoPai, LocalDate dataDaInstancia) {
+        List<Compromisso> ativos = carregarCompromissos();
+        ativos.stream()
+              .filter(c -> c.getId().equals(compromissoPai.getId()))
+              .findFirst()
+              .ifPresent(c -> {
+                  if (c.getDatasConcluidas() != null) {
+                      c.getDatasConcluidas().remove(dataDaInstancia);
+                  }
+                  salvarCompromissos(ativos);
+              });
+    }
 }
