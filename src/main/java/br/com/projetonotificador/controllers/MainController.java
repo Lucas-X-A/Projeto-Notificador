@@ -82,7 +82,7 @@ public class MainController {
                 titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
                 detailsLabel.setWrapText(true);
-                detailsLabel.setStyle("-fx-font-size: 14px; -fx-padding: 5 0 0 0;"); 
+                detailsLabel.setStyle("-fx-font-size: 14px; -fx-padding: 1 0 0 0;"); 
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
 
