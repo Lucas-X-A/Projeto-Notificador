@@ -79,8 +79,10 @@ public class MainController {
                 hbox.setAlignment(Pos.CENTER);
                 hbox.setSpacing(10);
 
+                titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
                 detailsLabel.setWrapText(true);
-                detailsLabel.setStyle("-fx-padding: 5 0 0 0;"); // Espaçamento acima da descrição
+                detailsLabel.setStyle("-fx-font-size: 14px; -fx-padding: 5 0 0 0;"); 
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
 

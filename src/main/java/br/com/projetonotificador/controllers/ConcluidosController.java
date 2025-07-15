@@ -68,8 +68,10 @@ public class ConcluidosController {
                 hbox.setAlignment(Pos.CENTER);
                 hbox.setSpacing(10);
 
+                titleLabel.setStyle("-fx-font-size: 14px;");
+
                 detailsLabel.setWrapText(true);
-                detailsLabel.setStyle("-fx-font-weight: bold; -fx-padding: 10 0 0 0;");
+                detailsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;");
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
 
@@ -144,8 +146,8 @@ public class ConcluidosController {
                     removerButton.setVisible(instancia.getCompromissoPai().isConcluido());
 
                     // Estilo para indicar que está concluído
-                    titleLabel.setStyle("-fx-strikethrough: true; -fx-text-fill: gray;");
-                    detailsLabel.setStyle("-fx-text-fill: gray;");
+                    titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;-fx-strikethrough: true; -fx-text-fill: gray;");
+                    detailsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: gray;");
 
                     // Mostra/esconde a descrição baseando-se na seleção
                     boolean isSelected = getListView().getSelectionModel().getSelectedItem() == instancia;
