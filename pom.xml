@@ -59,7 +59,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- A versão é herdada do pluginManagement -->
         <configuration>
           <release>21</release>
         </configuration>
@@ -67,7 +66,6 @@
       <plugin>
         <groupId>com.github.akman</groupId>
         <artifactId>jpackage-maven-plugin</artifactId>
-        <!-- A versão é herdada do pluginManagement -->
         <executions>
           <execution>
             <phase>verify</phase>
