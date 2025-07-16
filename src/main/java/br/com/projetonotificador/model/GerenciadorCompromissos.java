@@ -16,6 +16,7 @@ import java.util.List;
 import java.time.LocalDate;
 
 public class GerenciadorCompromissos {
+    private static final String NOME_PASTA_APP = "NotificadorCompromissos";
     private static final String ARQUIVO_ATIVOS = "compromissos.json";
     private static final String ARQUIVO_CONCLUIDOS = "compromissos_concluidos.json";
     private final Gson gson = new GsonBuilder()
@@ -23,8 +24,28 @@ public class GerenciadorCompromissos {
             .setPrettyPrinting()
             .create();
 
+    // Método para obter o diretório de dados do aplicativo
+    private Path getAppDataDirectory() {
+        // Obtém o caminho para a pasta AppData\Local do usuário
+        String appDataPath = System.getenv("LOCALAPPDATA");
+        // Se a variável de ambiente não existir, usa o diretório home como alternativa
+        if (appDataPath == null || appDataPath.isEmpty()) {
+            appDataPath = System.getProperty("user.home");
+        }
+        Path dir = Paths.get(appDataPath, NOME_PASTA_APP);
+        // Cria o diretório se ele não existir
+        if (!Files.exists(dir)) {
+            try {
+                Files.createDirectories(dir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return dir;
+    }
+
     private List<Compromisso> carregarLista(String nomeArquivo) {
-        Path caminhoDoArquivo = Paths.get(nomeArquivo);
+        Path caminhoDoArquivo = getAppDataDirectory().resolve(nomeArquivo);
         try {
             if (!Files.exists(caminhoDoArquivo) || Files.size(caminhoDoArquivo) == 0) {
                 return new ArrayList<>();
@@ -45,7 +66,9 @@ public class GerenciadorCompromissos {
     }
 
     private void salvarLista(List<Compromisso> compromissos, String nomeArquivo) {
-        try (FileWriter writer = new FileWriter(nomeArquivo)) {
+        // Usa o novo método para obter o caminho completo
+        Path caminhoDoArquivo = getAppDataDirectory().resolve(nomeArquivo);
+        try (FileWriter writer = new FileWriter(caminhoDoArquivo.toFile())) {
             gson.toJson(compromissos, writer);
         } catch (IOException e) {
             e.printStackTrace();
