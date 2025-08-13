@@ -46,14 +46,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.14.0</version>
         </plugin>
-        <plugin>
-          <groupId>com.github.akman</groupId>
-          <artifactId>jpackage-maven-plugin</artifactId>
-          <version>0.1.5</version>
-        </plugin>
       </plugins>
     </pluginManagement>
-
     <!-- Seção para executar os plugins -->
     <plugins>
       <plugin>
@@ -62,30 +56,6 @@
         <configuration>
           <release>21</release>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.akman</groupId>
-        <artifactId>jpackage-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>jpackage</goal>
-            </goals>
-            <configuration>
-              <name>Notificador de Compromissos</name>
-              <appVersion>1.0.0</appVersion>
-              <vendor>Lucas Xavier</vendor>
-              <destination>target/dist</destination>
-              <mainClass>br.com.projetonotificador.Launcher</mainClass>
-              <icon>src/main/resources/images/icone_app.ico</icon>
-              <win>
-                <shortcut>true</shortcut>
-                <menu>true</menu>
-              </win>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
