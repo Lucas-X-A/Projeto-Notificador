@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import atlantafx.base.theme.CupertinoLight;
+
 import java.io.IOException;
 
 import br.com.projetonotificador.model.Notificador;
@@ -15,6 +17,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/main-view.fxml"));
         Parent root = loader.load();
         
