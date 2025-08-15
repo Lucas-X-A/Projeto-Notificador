@@ -52,6 +52,35 @@ public class Compromisso {
         this.datasConcluidas.add(data);
     }
 
+    /**
+     * Verifica se um compromisso recorrente teve todas as suas instâncias concluídas.
+     * @return true se todas as instâncias foram concluídas, false caso contrário.
+     */
+    public boolean isTotalmenteConcluido() {
+        if (recorrencia == null || recorrencia == TipoRecorrencia.NAO_RECORRENTE) {
+            return this.concluido; // Para não recorrentes, usa o campo 'concluido'
+        }
+
+        if (datasConcluidas == null || dataFimRecorrencia == null) {
+            return false;
+        }
+
+        int totalOcorrencias = 0;
+        LocalDate dataIteracao = this.data;
+        while (!dataIteracao.isAfter(dataFimRecorrencia)) {
+            totalOcorrencias++;
+            if (recorrencia == TipoRecorrencia.SEMANAL) {
+                dataIteracao = dataIteracao.plusWeeks(1);
+            } else if (recorrencia == TipoRecorrencia.MENSAL) {
+                dataIteracao = dataIteracao.plusMonths(1);
+            } else {
+                break;
+            }
+        }
+
+        return datasConcluidas.size() >= totalOcorrencias;
+    }
+
     @Override
     public String toString() {
         return "Compromisso{" +

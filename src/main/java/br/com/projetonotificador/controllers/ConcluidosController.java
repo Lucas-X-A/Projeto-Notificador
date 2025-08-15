@@ -35,13 +35,11 @@ public class ConcluidosController {
     private ListView<CompromissoInstancia> listViewConcluidos;
 
     private MainController mainController;
-    private GerenciadorCompromissos gerenciador;
-    private ObservableList<CompromissoInstancia> compromissosConcluidosVisiveis;
+    private final GerenciadorCompromissos gerenciador = new GerenciadorCompromissos();
+    private final ObservableList<CompromissoInstancia> compromissosConcluidosVisiveis = FXCollections.observableArrayList();
     
     @FXML
     public void initialize() {
-        gerenciador = new GerenciadorCompromissos();
-        compromissosConcluidosVisiveis = FXCollections.observableArrayList();
         listViewConcluidos.setItems(compromissosConcluidosVisiveis);
 
         // Listener para forçar a atualização da lista na mudança de seleção (essencial para expandir/recolher)
@@ -58,7 +56,7 @@ public class ConcluidosController {
             private final Label detailsLabel = new Label();
             private final Pane pane = new Pane();
             private final Button reativarButton = new Button("Reativar");
-            private final Button removerButton = new Button("Remover");
+            private final Button removerButton = new Button("Excluir");
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
@@ -89,7 +87,7 @@ public class ConcluidosController {
                     CompromissoInstancia instancia = getItem();
                     if (instancia != null) {
                         Compromisso pai = instancia.getCompromissoPai();
-                        if (pai.isConcluido()) { // É um compromisso totalmente concluído
+                        if (pai.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
                             gerenciador.reativarCompromisso(pai);
                         } else { // É uma instância de um compromisso recorrente
                             gerenciador.reativarInstancia(pai, instancia.getDataDaInstancia());
@@ -100,16 +98,26 @@ public class ConcluidosController {
 
                 removerButton.setOnAction(event -> {
                     CompromissoInstancia instancia = getItem();
-                    // Adiciona uma verificação para garantir que só removemos compromissos totalmente concluídos
-                    if (instancia != null && instancia.getCompromissoPai().isConcluido()) {
+                    if (instancia != null) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Remoção");
                         alert.setHeaderText("Remover permanentemente o compromisso?");
 
-                        Text boldText = new Text("Esta ação não pode ser desfeita.\n\n");
-                        boldText.setStyle("-fx-font-weight: bold;");
-                        Text regularText = new Text("Título: " + instancia.getTitulo());
-                        TextFlow textFlow = new TextFlow(boldText, regularText);
+                        Compromisso pai = instancia.getCompromissoPai();
+                        TextFlow textFlow;
+
+                        // Verifica se o compromisso é recorrente para customizar a mensagem
+                        if (pai.getRecorrencia() != TipoRecorrencia.NAO_RECORRENTE) {
+                            Text boldText = new Text("Atenção: ");
+                            boldText.setStyle("-fx-font-weight: bold;");
+                            Text regularText = new Text("Isto removerá o compromisso\n\n'" + instancia.getTitulo() + "'\n\ne todas as suas recorrências.");
+                            textFlow = new TextFlow(boldText, regularText);
+                        } else {
+                            Text boldText = new Text("Esta ação não pode ser desfeita.\n\n");
+                            boldText.setStyle("-fx-font-weight: bold;");
+                            Text regularText = new Text("Compromisso: " + instancia.getTitulo());
+                            textFlow = new TextFlow(boldText, regularText);
+                        }
                         
                         alert.getDialogPane().setContent(textFlow);
 
@@ -117,9 +125,13 @@ public class ConcluidosController {
                         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
                         
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                            List<Compromisso> concluidos = gerenciador.carregarCompromissosConcluidos();
-                            concluidos.removeIf(c -> c.getId().equals(instancia.getCompromissoPai().getId()));
-                            gerenciador.salvarCompromissosConcluidos(concluidos);
+                            // Se for um compromisso simples, remove do arquivo de concluídos
+                            if (pai.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
+                                gerenciador.excluirCompromissoConcluido(pai);
+                            } else {
+                                // Se for recorrente, remove do arquivo de ativos
+                                gerenciador.excluirCompromissoAtivo(pai);
+                            }
                             atualizarListaConcluidos();
                         }
                     }
@@ -138,12 +150,13 @@ public class ConcluidosController {
                     setStyle("");
                 } else {
                     // Popula os dados
+                    Compromisso pai = instancia.getCompromissoPai();
                     String dataFormatada = instancia.getDataDaInstancia().format(formatter);
                     titleLabel.setText(dataFormatada + " - " + instancia.getTitulo());
                     detailsLabel.setText("Detalhes: " + instancia.getDescricao());
 
                     // O botão de remover só é visível para compromissos que foram totalmente concluídos
-                    removerButton.setVisible(instancia.getCompromissoPai().isConcluido());
+                    removerButton.setVisible(pai.isTotalmenteConcluido());
 
                     // Estilo para indicar que está concluído
                     titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;-fx-strikethrough: true; -fx-text-fill: gray;");

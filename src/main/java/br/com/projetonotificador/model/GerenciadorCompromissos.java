@@ -165,4 +165,22 @@ public class GerenciadorCompromissos {
                   salvarCompromissos(ativos);
               });
     }
+
+    /**
+     * Exclui permanentemente um compromisso da lista de concluídos (para não recorrentes).
+     */
+    public void excluirCompromissoConcluido(Compromisso compromissoParaExcluir) {
+        List<Compromisso> concluidos = carregarCompromissosConcluidos();
+        concluidos.removeIf(c -> c.getId().equals(compromissoParaExcluir.getId()));
+        salvarLista(concluidos, ARQUIVO_CONCLUIDOS);
+    }
+
+    /**
+     * Exclui permanentemente um compromisso da lista de ativos (para recorrentes totalmente concluídos).
+     */
+    public void excluirCompromissoAtivo(Compromisso compromissoParaExcluir) {
+        List<Compromisso> ativos = carregarCompromissos();
+        ativos.removeIf(c -> c.getId().equals(compromissoParaExcluir.getId()));
+        salvarLista(ativos, ARQUIVO_ATIVOS);
+    }
 }
