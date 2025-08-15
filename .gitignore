@@ -38,5 +38,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-/compromissos.json
-/compromissos_concluidos.json
+# Arquivos de dados de desenvolvimento
+/data/
