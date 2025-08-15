@@ -93,7 +93,7 @@ public class MainController {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Conclusão");
                         alert.setHeaderText("Concluir o compromisso?");
-                        alert.setContentText("Você tem certeza que deseja marcar '" + instancia.getTitulo() + "' como concluído?");
+                        alert.setContentText("Você tem certeza que deseja marcar o compromisso:\n\n'" + instancia.getTitulo() + "'\n\ncomo concluído?");
                         
                         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
@@ -232,42 +232,47 @@ public class MainController {
     }
 
     private void atualizarListaCompromissos() {
+        // Carrega a lista de compromissos que ainda não foram movidos para "concluidos.json"
         List<Compromisso> compromissosBase = gerenciador.carregarCompromissos();
-        List<CompromissoInstancia> instanciasAtivas = new ArrayList<>();
-        LocalDate hoje = LocalDate.now();
-        LocalDate limiteGeracao = hoje.plusMonths(3); // Gera ocorrências para até 3 meses no futuro
-
+        List<CompromissoInstancia> todasAsInstancias = new ArrayList<>();
+        
         for (Compromisso c : compromissosBase) {
+            // Pula compromissos que foram totalmente concluídos (caso de não recorrentes)
             if (c.isConcluido()) continue;
 
+            // Se for um compromisso simples, não recorrente
             if (c.getRecorrencia() == null || c.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
-                if (!c.getData().isBefore(hoje)) {
-                    instanciasAtivas.add(new CompromissoInstancia(c, c.getData()));
-                }
-            } else {
+                // Adiciona à lista sem verificar a data
+                todasAsInstancias.add(new CompromissoInstancia(c, c.getData()));
+            } else { // Se for um compromisso recorrente
                 LocalDate dataFim = c.getDataFimRecorrencia();
-                if (dataFim == null) continue;
+                if (dataFim == null) continue; // Segurança
 
                 LocalDate dataIteracao = c.getData();
-                while (!dataIteracao.isAfter(dataFim) && !dataIteracao.isAfter(limiteGeracao)) {
-                    // Adiciona a instância apenas se ela não for anterior a hoje e não estiver na lista de concluídas
-                    if (!dataIteracao.isBefore(hoje) && (c.getDatasConcluidas() == null || !c.getDatasConcluidas().contains(dataIteracao))) {
-                        instanciasAtivas.add(new CompromissoInstancia(c, dataIteracao));
+                // Gera todas as instâncias até a data final da recorrência
+                while (!dataIteracao.isAfter(dataFim)) {
+                    // Adiciona a instância apenas se ela não estiver na lista de concluídas
+                    if (c.getDatasConcluidas() == null || !c.getDatasConcluidas().contains(dataIteracao)) {
+                        todasAsInstancias.add(new CompromissoInstancia(c, dataIteracao));
                     }
 
+                    // Avança para a próxima data de recorrência
                     if (c.getRecorrencia() == TipoRecorrencia.SEMANAL) {
                         dataIteracao = dataIteracao.plusWeeks(1);
                     } else if (c.getRecorrencia() == TipoRecorrencia.MENSAL) {
                         dataIteracao = dataIteracao.plusMonths(1);
                     } else {
-                        break; // Segurança para evitar loop infinito
+                        break; // Evita loop infinito se um novo tipo for adicionado sem tratamento
                     }
                 }
             }
         }
 
-        instanciasAtivas.sort(Comparator.comparing(CompromissoInstancia::getDataDaInstancia));
-        compromissosVisiveis.setAll(instanciasAtivas);
+        // Ordena a lista final pela data da instância
+        todasAsInstancias.sort(Comparator.comparing(CompromissoInstancia::getDataDaInstancia));
+        
+        // Atualiza a lista visível na interface
+        compromissosVisiveis.setAll(todasAsInstancias);
     }
 
 }
