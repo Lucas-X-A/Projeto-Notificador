@@ -7,6 +7,7 @@ import br.com.projetonotificador.model.TipoRecorrencia;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -57,19 +58,22 @@ public class ConcluidosController {
             private final Pane pane = new Pane();
             private final Button reativarButton = new Button("Reativar");
             private final Button removerButton = new Button("Excluir");
+            private final HBox buttonBox = new HBox(10); // Espaçamento de 10px entre os botões
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
                 // Configuração do layout da célula
                 HBox.setHgrow(pane, Priority.ALWAYS);
-                hbox.getChildren().addAll(titleLabel, pane, reativarButton, removerButton);
+                buttonBox.getChildren().addAll(reativarButton, removerButton);
+                buttonBox.setAlignment(Pos.CENTER);
+                hbox.getChildren().addAll(titleLabel, pane, buttonBox);
                 hbox.setAlignment(Pos.CENTER);
-                hbox.setSpacing(10);
+                hbox.setPadding(new Insets(5, 0, 5, 0)); 
 
                 titleLabel.setStyle("-fx-font-size: 14px;");
 
                 detailsLabel.setWrapText(true);
-                detailsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;");
+                detailsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 0 0 5 0;");
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
 
@@ -160,7 +164,7 @@ public class ConcluidosController {
 
                     // Estilo para indicar que está concluído
                     titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;-fx-strikethrough: true; -fx-text-fill: gray;");
-                    detailsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: gray;");
+                    detailsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: gray; -fx-padding: 0 0 5 0;");
 
                     // Mostra/esconde a descrição baseando-se na seleção
                     boolean isSelected = getListView().getSelectionModel().getSelectedItem() == instancia;

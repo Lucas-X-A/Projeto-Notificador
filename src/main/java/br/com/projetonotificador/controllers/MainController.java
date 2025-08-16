@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -70,19 +71,22 @@ public class MainController {
             private final Pane pane = new Pane();
             private final Button editButton = new Button("Editar");
             private final Button concluirButton = new Button("Concluir");
+            private final HBox buttonBox = new HBox(10); // Espaçamento de 10px entre os botões
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
                 // Configuração do layout da célula
                 HBox.setHgrow(pane, Priority.ALWAYS);
-                hbox.getChildren().addAll(titleLabel, pane, editButton, concluirButton);
+                buttonBox.getChildren().addAll(editButton, concluirButton);
+                buttonBox.setAlignment(Pos.CENTER);
+                hbox.getChildren().addAll(titleLabel, pane, buttonBox);
                 hbox.setAlignment(Pos.CENTER);
-                hbox.setSpacing(10);
+                hbox.setPadding(new Insets(5, 0, 5, 0)); 
 
                 titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
                 detailsLabel.setWrapText(true);
-                detailsLabel.setStyle("-fx-font-size: 14px; -fx-padding: 1 0 0 0;"); 
+                detailsLabel.setStyle("-fx-font-size: 14px; -fx-padding: 0 0 5 0;"); 
 
                 vbox.getChildren().addAll(hbox, detailsLabel);
 
