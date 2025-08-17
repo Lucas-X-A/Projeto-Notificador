@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -277,6 +278,11 @@ public class MainController {
         
         // Atualiza a lista visível na interface
         compromissosVisiveis.setAll(todasAsInstancias);
+    }
+
+    @FXML
+    private void onSairClick() {
+        Platform.exit();
     }
 
 }
