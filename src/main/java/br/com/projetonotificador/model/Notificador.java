@@ -1,6 +1,9 @@
 package br.com.projetonotificador.model;
 
 import java.awt.AWTException;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
@@ -154,8 +157,21 @@ public class Notificador {
             // Envolve o conteúdo com as tags <html> para que o JOptionPane o interprete corretamente
             String mensagemFinal = "<html><body style='width: 300px;'>" + htmlContent + "</body></html>";
 
+            // Carrega o ícone original
             ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
-            Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            int iconSize = 48; // Tamanho desejado
+
+            // Cria uma nova imagem em buffer com suporte a transparência
+            BufferedImage resizedImage = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = resizedImage.createGraphics();
+
+            // Aplica dicas de renderização para alta qualidade de interpolação
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            
+            // Desenha a imagem original na nova imagem redimensionada
+            g2d.drawImage(originalIcon.getImage(), 0, 0, iconSize, iconSize, null);
+            g2d.dispose(); // Libera os recursos gráficos
+
             ImageIcon finalIcon = new ImageIcon(resizedImage);
 
             JOptionPane.showMessageDialog(null, mensagemFinal, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
