@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane; 
+import javax.swing.JOptionPane;
 
 public class Notificador {
 
@@ -139,21 +139,26 @@ public class Notificador {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             
-            // Constrói uma única string com todos os compromissos do dia
-            String mensagemDetalhada = instancias.stream()
+            // Constrói uma única string HTML com todos os compromissos do dia
+            String htmlContent = instancias.stream()
                 .map(inst -> String.format(
-                    "Título: %s\nData: %s\nDescrição: %s",
+                    "<p><b>Título:</b> %s<br>" +
+                    "<b>Data:</b> %s<br>" +
+                    "<b>Descrição:</b> %s</p>",
                     inst.getTitulo(),
                     inst.getDataDaInstancia().format(formatter),
                     inst.getDescricao()
                 ))
-                .collect(Collectors.joining("\n\n---\n\n"));
+                .collect(Collectors.joining("<hr>")); // Usa uma linha horizontal como separador
+
+            // Envolve o conteúdo com as tags <html> para que o JOptionPane o interprete corretamente
+            String mensagemFinal = "<html><body style='width: 300px;'>" + htmlContent + "</body></html>";
 
             ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/icone_app.png"));
             Image resizedImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
             ImageIcon finalIcon = new ImageIcon(resizedImage);
 
-            JOptionPane.showMessageDialog(null, mensagemDetalhada, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
+            JOptionPane.showMessageDialog(null, mensagemFinal, "Compromissos de Hoje", JOptionPane.PLAIN_MESSAGE, finalIcon);
         
         } finally {
             isInfoWindowShowing = false; // Libera a trava quando a janela é fechada
