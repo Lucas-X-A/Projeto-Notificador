@@ -152,11 +152,10 @@ public class MainController {
                     titleLabel.setTextFill(Color.BLACK);
                     detailsLabel.setTextFill(Color.BLACK);
 
-                    // Mostra/esconde os botões
-                    // Apenas compromissos futuros e não concluídos podem ser editados.
-                    boolean podeEditar = !instancia.getDataDaInstancia().isBefore(LocalDate.now());
-                    editButton.setVisible(podeEditar);
-                    concluirButton.setVisible(true); // O botão de concluir é sempre visível para instâncias ativas
+                    // Botões de editar e concluir
+                    editButton.setOpacity(1.0);
+                    editButton.setDisable(false); 
+                    concluirButton.setVisible(true);
 
                     // Mostra/esconde a descrição baseando-se na seleção
                     boolean isSelected = getListView().getSelectionModel().getSelectedItem() == instancia;
