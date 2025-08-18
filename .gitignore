@@ -40,3 +40,9 @@ build/
 
 # Arquivos de dados de desenvolvimento
 /data/
+
+# META-INF
+/src/main/resources/META-INF/
+
+# Pasta "out"
+/out/
