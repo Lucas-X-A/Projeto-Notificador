@@ -24,7 +24,7 @@
    <center>
       <ListView fx:id="listViewConcluidos" prefHeight="200.0" prefWidth="200.0">
          <placeholder>
-            <Label text="Nenhum compromisso foi concluído ainda." />
+            <Label text="Nenhum compromisso concluído." />
          </placeholder>
       </ListView>
    </center>
