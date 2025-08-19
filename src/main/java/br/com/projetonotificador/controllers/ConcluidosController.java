@@ -109,7 +109,7 @@ public class ConcluidosController {
                     if (instancia != null) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Remoção");
-                        alert.setHeaderText("Remover permanentemente o compromisso?");
+                        alert.setHeaderText("Excluir permanentemente o compromisso?");
 
                         Compromisso pai = instancia.getCompromissoPai();
                         TextFlow textFlow;
@@ -132,6 +132,17 @@ public class ConcluidosController {
                         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
                         
+                        // Pega o botão OK padrão do painel de diálogo
+                        final Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+                        
+                        // Muda o texto do botão para "Excluir"
+                        okButton.setText("Excluir");
+                        okButton.setStyle("-fx-background-color: #f07a86ff; -fx-text-fill: black; -fx-font-weight: bold;");
+                        
+                        // Estiliza o botão Cancelar para consistência visual
+                        final Button cancelButton = (Button) alert.getDialogPane().lookupButton(ButtonType.CANCEL);
+                        cancelButton.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-font-weight: bold;");
+
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                             // Se for um compromisso simples, remove do arquivo de concluídos
                             if (pai.getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {

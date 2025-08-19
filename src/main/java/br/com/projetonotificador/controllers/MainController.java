@@ -98,10 +98,23 @@ public class MainController {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Confirmar Conclusão");
                         alert.setHeaderText("Concluir o compromisso?");
-                        alert.setContentText("Você tem certeza que deseja marcar o compromisso:\n\n'" + instancia.getTitulo() + "'\n\ncomo concluído?");
+                        alert.setContentText("Marcar o compromisso:\n\n'" + instancia.getTitulo() + "'\n\ncomo concluído?");
                         
                         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
+
+                        // Pega o botão OK padrão do painel de diálogo
+                        final Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+                        
+                        // Muda o texto do botão para "Concluir"
+                        okButton.setText("Concluir");
+                        
+                        // Aplica o mesmo estilo do botão "Concluir" da tela principal
+                        okButton.setStyle("-fx-background-color: #81d784ff; -fx-text-fill: black; -fx-font-weight: bold;");
+                        
+                        // Estiliza o botão Cancelar para consistência visual
+                        final Button cancelButton = (Button) alert.getDialogPane().lookupButton(ButtonType.CANCEL);
+                        cancelButton.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-font-weight: bold;");
 
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                             if (instancia.getCompromissoPai().getRecorrencia() == TipoRecorrencia.NAO_RECORRENTE) {
