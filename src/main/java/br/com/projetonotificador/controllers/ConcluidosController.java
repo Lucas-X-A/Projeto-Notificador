@@ -62,6 +62,10 @@ public class ConcluidosController {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             {
+                // Cores dos botões 
+                reativarButton.setStyle("-fx-background-color: #77c2ffff; -fx-text-fill: black; -fx-font-weight: bold;");
+                removerButton.setStyle("-fx-background-color: #f07a86ff; -fx-text-fill: black; -fx-font-weight: bold;");
+
                 // Configuração do layout da célula
                 HBox.setHgrow(pane, Priority.ALWAYS);
                 buttonBox.getChildren().addAll(reativarButton, removerButton);

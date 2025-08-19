@@ -152,6 +152,10 @@ public class MainController {
                     titleLabel.setTextFill(Color.BLACK);
                     detailsLabel.setTextFill(Color.BLACK);
 
+                    // Adiciona estilo aos botões para melhor identificação visual
+                    editButton.setStyle("-fx-background-color: #f9d464ff; -fx-text-fill: black; -fx-font-weight: bold;");
+                    concluirButton.setStyle("-fx-background-color: #81d784ff; -fx-text-fill: black; -fx-font-weight: bold;");
+
                     // Botões de editar e concluir
                     editButton.setOpacity(1.0);
                     editButton.setDisable(false); 

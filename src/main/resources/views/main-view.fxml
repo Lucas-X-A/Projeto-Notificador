@@ -17,7 +17,7 @@
          <children>
             <HBox fx:id="topButtonsBox" alignment="CENTER" spacing="20.0" StackPane.alignment="CENTER">
                <children>
-                  <Button fx:id="btnAdicionar" mnemonicParsing="false" onAction="#onAdicionarCompromissoClick" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;" text="Adicionar Compromisso" />
+                  <Button fx:id="btnAdicionar" mnemonicParsing="false" onAction="#onAdicionarCompromissoClick" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" text="Adicionar Compromisso" />
                   <Button fx:id="btnVerConcluidos" mnemonicParsing="false" onAction="#onVerConcluidosClick" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold;" text="Ver Concluídos" />
                </children>
             </HBox>

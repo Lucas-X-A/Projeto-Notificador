@@ -21,7 +21,7 @@
       <ComboBox fx:id="comboRecorrencia" prefWidth="150.0" />
       <Label fx:id="lblDataFim" text="Repetir até:" style="-fx-font-size: 14px;" />
       <DatePicker fx:id="datePickerFim" promptText="Data final da recorrência" />
-      <Button fx:id="btnSalvar" mnemonicParsing="false" onAction="#onSalvarClick" text="Salvar" />
+      <Button fx:id="btnSalvar" mnemonicParsing="false" onAction="#onSalvarClick" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" text="Salvar" />
    </children>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
