@@ -12,6 +12,7 @@ import atlantafx.base.theme.CupertinoLight;
 import java.io.IOException;
 
 import br.com.projetonotificador.model.Notificador;
+import br.com.projetonotificador.model.UpdateChecker;
 
 public class MainApp extends Application {
 
@@ -25,6 +26,9 @@ public class MainApp extends Application {
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+
+        // Faz verificação de atualização em segundo plano
+        UpdateChecker.check();
     }
 
     public static void main(String[] args) {
