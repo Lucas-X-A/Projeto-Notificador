@@ -62,6 +62,9 @@ public class AddCompromissoController {
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
+        // Impede que a janela de diálogo seja redimensionada ou maximizada.
+        this.dialogStage.setResizable(false);
+
     }
 
     public void setCompromissoParaEditar(Compromisso compromisso) {
