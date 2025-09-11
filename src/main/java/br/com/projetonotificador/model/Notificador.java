@@ -89,7 +89,6 @@ public class Notificador {
         }
 
         try {
-            // --- INÍCIO DA ALTERAÇÃO ---
             // Se o ícone não existe, cria e adiciona à bandeja.
             if (trayIcon == null) {
                 SystemTray tray = SystemTray.getSystemTray();
