@@ -88,31 +88,35 @@ public class Notificador {
             return;
         }
 
-        // Se o ícone já existe, não faz nada.
-        if (trayIcon != null) {
-            return;
-        }
-
         try {
-            SystemTray tray = SystemTray.getSystemTray();
-            Image image = Toolkit.getDefaultToolkit().createImage(getClass().getResource("/images/icone_app.png"));
-            trayIcon = new TrayIcon(image, "Alerta de Compromissos");
-            trayIcon.setImageAutoSize(true);
+            // --- INÍCIO DA ALTERAÇÃO ---
+            // Se o ícone não existe, cria e adiciona à bandeja.
+            if (trayIcon == null) {
+                SystemTray tray = SystemTray.getSystemTray();
+                Image image = Toolkit.getDefaultToolkit().createImage(getClass().getResource("/images/icone_app.png"));
+                trayIcon = new TrayIcon(image, "Alerta de Compromissos");
+                trayIcon.setImageAutoSize(true);
+                tray.add(trayIcon);
+            }
 
-            // Ação ao clicar na notificação
+            // Remove todos os listeners antigos para evitar comportamento desatualizado.
+            for (java.awt.event.ActionListener al : trayIcon.getActionListeners()) {
+                trayIcon.removeActionListener(al);
+            }
+            for (java.awt.event.MouseListener ml : trayIcon.getMouseListeners()) {
+                trayIcon.removeMouseListener(ml);
+            }
+
+            // Adiciona os novos listeners com a lista de instâncias atualizada.
             trayIcon.addActionListener(e -> exibirDetalhes(instancias));
-
-            // Ação ao clicar no ícone na bandeja do sistema
             trayIcon.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) { 
+                public void mouseClicked(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
                         exibirDetalhes(instancias);
                     }
                 }
             });
-
-            tray.add(trayIcon);
         
             // Exibe a notificação inicial (o balão)
             String tituloNotificacao = "Você tem " + instancias.size() + " compromisso(s) hoje.";
