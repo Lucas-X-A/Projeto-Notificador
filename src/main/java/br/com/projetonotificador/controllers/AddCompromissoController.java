@@ -137,6 +137,11 @@ public class AddCompromissoController {
         dialogStage.close();
     }
 
+    @FXML
+    private void onCancelarClick() {
+        dialogStage.close();
+    }
+
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erro de Validação");

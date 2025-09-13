@@ -8,8 +8,9 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 
-<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.AddCompromissoController">
+<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.projetonotificador.controllers.AddCompromissoController">
    <children>
       <Label text="Título:" style="-fx-font-size: 14px;" />
       <TextField fx:id="txtTitulo" promptText="Título do compromisso" />
@@ -21,7 +22,12 @@
       <ComboBox fx:id="comboRecorrencia" prefWidth="150.0" />
       <Label fx:id="lblDataFim" text="Repetir até:" style="-fx-font-size: 14px;" />
       <DatePicker fx:id="datePickerFim" promptText="Data final da recorrência" />
-      <Button fx:id="btnSalvar" mnemonicParsing="false" onAction="#onSalvarClick" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" text="Salvar" />
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Button fx:id="btnSalvar" mnemonicParsing="false" onAction="#onSalvarClick" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" text="Salvar" />
+            <Button fx:id="btnCancelar" mnemonicParsing="false" onAction="#onCancelarClick" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold;" text="Cancelar" />
+         </children>
+      </HBox>
    </children>
    <padding>
       <Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
