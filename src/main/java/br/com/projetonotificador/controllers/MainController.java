@@ -55,7 +55,7 @@ public class MainController {
     @FXML
     public void initialize() {
         gerenciador = new GerenciadorCompromissos();
-        notificador = new Notificador();
+        notificador = Notificador.getInstance(); // Obtém a instância única
         compromissosVisiveis = FXCollections.observableArrayList();
         listViewCompromissos.setItems(compromissosVisiveis);
 

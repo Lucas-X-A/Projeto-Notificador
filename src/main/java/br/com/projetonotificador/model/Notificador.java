@@ -21,13 +21,22 @@ import javax.swing.JOptionPane;
 
 public class Notificador {
 
+    private static Notificador instance; // A única instância da classe
     private final GerenciadorCompromissos gerenciador;
-    private static TrayIcon trayIcon; // Ícone estático para persistir
-    private static boolean isInfoWindowShowing = false;
-    private static LocalDate ultimaDataNotificada; // Data da última notificação exibida
+    private TrayIcon trayIcon; 
+    private boolean isInfoWindowShowing = false;
+    private LocalDate ultimaDataNotificada; // Data da última notificação exibida
 
-    public Notificador() {
+    // Construtor privado para impedir a criação de novas instâncias
+    private Notificador() {
         this.gerenciador = new GerenciadorCompromissos();
+    }
+
+    public static synchronized Notificador getInstance() {
+        if (instance == null) {
+            instance = new Notificador();
+        }
+        return instance;
     }
 
     public boolean verificarEAlertar() {
