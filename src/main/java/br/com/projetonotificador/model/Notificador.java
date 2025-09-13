@@ -24,7 +24,7 @@ public class Notificador {
     private final GerenciadorCompromissos gerenciador;
     private static TrayIcon trayIcon; // Ícone estático para persistir
     private static boolean isInfoWindowShowing = false;
-
+    private static LocalDate ultimaDataNotificada; // Data da última notificação exibida
 
     public Notificador() {
         this.gerenciador = new GerenciadorCompromissos();
@@ -116,19 +116,24 @@ public class Notificador {
                     }
                 }
             });
-        
-            // Exibe a notificação inicial (o balão)
-            String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
-            if (instancias.size() == 1) {
-                tituloNotificacao = "Compromisso para Hoje: " + instancias.get(0).getTitulo();
-            }
-            
-            trayIcon.displayMessage(
-                tituloNotificacao,
-                "Clique no ícone para ver os detalhes.",
-                TrayIcon.MessageType.INFO
-            );
 
+            LocalDate hoje = LocalDate.now();
+            if (ultimaDataNotificada == null || !ultimaDataNotificada.equals(hoje)) {
+                // Exibe a notificação inicial (o balão)
+                String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
+                if (instancias.size() == 1) {
+                    tituloNotificacao = "Compromisso para Hoje: " + instancias.get(0).getTitulo();
+                }
+            
+                trayIcon.displayMessage(
+                    tituloNotificacao,
+                "Clique no ícone para ver os detalhes.",
+                    TrayIcon.MessageType.INFO
+                );
+
+                ultimaDataNotificada = hoje; // Atualiza a data da última notificação
+            } 
+            
         } catch (AWTException e) {
             e.printStackTrace();
         }

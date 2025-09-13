@@ -34,6 +34,7 @@ import java.util.List;
 import br.com.projetonotificador.model.Compromisso;
 import br.com.projetonotificador.model.CompromissoInstancia;
 import br.com.projetonotificador.model.GerenciadorCompromissos;
+import br.com.projetonotificador.model.Notificador;
 import br.com.projetonotificador.model.TipoRecorrencia;
 
 public class MainController {
@@ -49,10 +50,12 @@ public class MainController {
 
     private GerenciadorCompromissos gerenciador;
     private ObservableList<CompromissoInstancia> compromissosVisiveis;
+    private Notificador notificador;
 
     @FXML
     public void initialize() {
         gerenciador = new GerenciadorCompromissos();
+        notificador = new Notificador();
         compromissosVisiveis = FXCollections.observableArrayList();
         listViewCompromissos.setItems(compromissosVisiveis);
 
@@ -294,6 +297,9 @@ public class MainController {
         
         // Atualiza a lista visível na interface
         compromissosVisiveis.setAll(todasAsInstancias);
+
+        // Garante que o notificador verifique os compromissos do dia e atualize o ícone da bandeja.
+        notificador.verificarEAlertar();
     }
 
     @FXML
