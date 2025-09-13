@@ -118,7 +118,7 @@ public class Notificador {
             });
         
             // Exibe a notificação inicial (o balão)
-            String tituloNotificacao = "Você tem " + instancias.size() + " compromisso(s) hoje.";
+            String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
             if (instancias.size() == 1) {
                 tituloNotificacao = "Compromisso para Hoje: " + instancias.get(0).getTitulo();
             }
