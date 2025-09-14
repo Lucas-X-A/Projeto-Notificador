@@ -19,6 +19,12 @@ import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
+import org.controlsfx.control.Notifications;
+
+import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.util.Duration;
+
 public class Notificador {
 
     private static Notificador instance; // A única instância da classe
@@ -90,9 +96,11 @@ public class Notificador {
         if (!instanciasDeHoje.isEmpty()) {
             criarIconeNaBandeja(instanciasDeHoje);
             return true;
+        } else {
+            // Se não há compromissos, remove o ícone se ele existir.
+            removerIconeDaBandeja();
+            return false;
         }
-        
-        return false;
     }
 
     private void criarIconeNaBandeja(List<CompromissoInstancia> instancias) {
@@ -132,23 +140,35 @@ public class Notificador {
 
             LocalDate hoje = LocalDate.now();
             if (ultimaDataNotificada == null || !ultimaDataNotificada.equals(hoje)) {
-                // Exibe a notificação inicial (o balão)
-                String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
-                if (instancias.size() == 1) {
-                    tituloNotificacao = "Compromisso para Hoje: " + instancias.get(0).getTitulo();
-                }
-            
-                trayIcon.displayMessage(
-                    tituloNotificacao,
-                "Clique no ícone para ver os detalhes.",
-                    TrayIcon.MessageType.INFO
-                );
-
-                ultimaDataNotificada = hoje; // Atualiza a data da última notificação
+                Platform.runLater(() -> {
+                    String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
+                    String textoNotificacao = "Clique no ícone na bandeja para ver os detalhes.";
+                    if (instancias.size() == 1) {
+                        tituloNotificacao = "Compromisso para Hoje";
+                        textoNotificacao = instancias.get(0).getTitulo();
+                    }
+                    Notifications.create()
+                        .title(tituloNotificacao)
+                        .text(textoNotificacao)
+                        .position(Pos.BOTTOM_RIGHT)
+                        .hideAfter(Duration.seconds(15))
+                        .showInformation();
+                });
+                ultimaDataNotificada = hoje;
             } 
-            
         } catch (AWTException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Remove o ícone da bandeja do sistema, se ele existir.
+     */
+    private void removerIconeDaBandeja() {
+        if (trayIcon != null) {
+            SystemTray tray = SystemTray.getSystemTray();
+            tray.remove(trayIcon);
+            trayIcon = null; // Essencial para que isTrayIconActive() retorne false
         }
     }
 
