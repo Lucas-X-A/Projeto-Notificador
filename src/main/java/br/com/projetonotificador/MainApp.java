@@ -36,7 +36,8 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) throws IOException {
         instance = this;
         this.primaryStage = primaryStage;
-        boolean notificou = Notificador.getInstance().verificarEAlertar();
+        Notificador notificador = Notificador.getInstance();
+        boolean notificou = notificador.verificarEAlertar();
 
         // A aplicação só se encerra se não notificou E se a UI não foi explicitamente solicitada.
         if (!notificou && !showUIOnStart) {
@@ -45,9 +46,18 @@ public class MainApp extends Application {
             return; 
         }
 
-        // Se chegou até aqui, é porque há compromissos. O app deve continuar rodando.
-        Platform.setImplicitExit(false); // Impede que o app feche ao fechar a janela
-        primaryStage.setOnCloseRequest(event -> primaryStage.hide()); // Esconde a janela
+        // Configura o comportamento de fechamento da janela (botão "X")
+        primaryStage.setOnCloseRequest(event -> {
+            // Se o ícone da bandeja não estiver ativo, encerra a aplicação.
+            if (!notificador.isTrayIconActive()) {
+                Platform.exit();
+            } else {
+                // Se o ícone estiver ativo, apenas esconde a janela.
+                primaryStage.hide();
+            }
+        });
+        // Impede que o app feche ao fechar a última janela (se o ícone estiver ativo)
+        Platform.setImplicitExit(false);
 
         Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/main-view.fxml"));
