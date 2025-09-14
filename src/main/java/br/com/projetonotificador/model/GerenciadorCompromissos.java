@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
-import java.net.URL;
 
 public class GerenciadorCompromissos {
     private static final String NOME_PASTA_APP = "NotificadorCompromissos";
@@ -29,15 +28,15 @@ public class GerenciadorCompromissos {
     // Método para obter o diretório de dados do aplicativo
     private Path getAppDataDirectory() {
         Path dir;
-        // Verifica se o app está rodando de um JAR ou de arquivos de classe soltos (IDE)
-        URL resource = GerenciadorCompromissos.class.getResource("GerenciadorCompromissos.class");
-        if (resource != null && resource.getProtocol().equals("file")) {
+        // Lê a propriedade de sistema 'app.env' para determinar o ambiente.
+        String env = System.getProperty("app.env");
+        // Se a propriedade for 'dev', estamos no modo de desenvolvimento.
+        if ("dev".equals(env)) {
             // MODO DE DESENVOLVIMENTO: Salva na pasta 'data' local do projeto
             dir = Paths.get(NOME_PASTA_DEV_DATA);
         } else {
             // MODO DE PRODUÇÃO: Salva na pasta AppData do usuário
             String appDataPath = System.getenv("LOCALAPPDATA");
-            // Se a variável de ambiente não existir, usa o diretório home como alternativa
             if (appDataPath == null || appDataPath.isEmpty()) {
                 appDataPath = System.getProperty("user.home");
             }
