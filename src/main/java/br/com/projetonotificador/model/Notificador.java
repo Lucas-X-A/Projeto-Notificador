@@ -39,6 +39,10 @@ public class Notificador {
         return instance;
     }
 
+    public boolean isTrayIconActive() {
+        return this.trayIcon != null;
+    }
+
     public boolean verificarEAlertar() {
         List<Compromisso> compromissosBase = gerenciador.carregarCompromissos();
         List<CompromissoInstancia> instanciasDeHoje = new ArrayList<>();
