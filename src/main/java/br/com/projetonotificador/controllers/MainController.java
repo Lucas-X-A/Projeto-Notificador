@@ -1,5 +1,6 @@
 package br.com.projetonotificador.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,7 +23,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.application.Platform;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -304,7 +304,15 @@ public class MainController {
 
     @FXML
     private void onSairClick() {
-        Platform.exit();
+        if (!notificador.isTrayIconActive()) {
+            Platform.exit();
+        } else {
+            // Se o ícone estiver ativo, apenas esconde a janela principal.
+            Stage stage = (Stage) mainBorderPane.getScene().getWindow();
+            if (stage != null) {
+                stage.hide();
+            }
+        }
     }
 
 }
