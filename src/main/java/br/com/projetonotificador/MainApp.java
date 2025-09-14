@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 import br.com.projetonotificador.model.Notificador;
 import br.com.projetonotificador.model.UpdateChecker;
@@ -29,22 +30,24 @@ public class MainApp extends Application {
     private Stage primaryStage;
     private static MainApp instance;
     private static ServerSocket serverSocket;
+    private static boolean showUIOnStart = false;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
         instance = this;
         this.primaryStage = primaryStage;
         boolean notificou = Notificador.getInstance().verificarEAlertar();
-        if (!notificou) {
+
+        // A aplicação só se encerra se não notificou E se a UI não foi explicitamente solicitada.
+        if (!notificou && !showUIOnStart) {
             System.out.println("Nenhum compromisso para hoje. Encerrando aplicação silenciosamente.");
             Platform.exit(); // Encerra a aplicação JavaFX
-            return; // Impede que o resto do código seja executado.
+            return; 
         }
+
         // Se chegou até aqui, é porque há compromissos. O app deve continuar rodando.
         Platform.setImplicitExit(false); // Impede que o app feche ao fechar a janela
-        primaryStage.setOnCloseRequest(event -> {
-            primaryStage.hide(); // Apenas esconde a janela, não fecha o app
-        });
+        primaryStage.setOnCloseRequest(event -> primaryStage.hide()); // Esconde a janela
 
         Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/main-view.fxml"));
@@ -53,6 +56,10 @@ public class MainApp extends Application {
         primaryStage.setTitle("Alerta de Compromissos");
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icone_app.png")));
         primaryStage.setScene(new Scene(root));
+
+        if (showUIOnStart) {
+            primaryStage.show();
+        }
         
         // Faz verificação de atualização em segundo plano
         UpdateChecker.check();
@@ -78,13 +85,15 @@ public class MainApp extends Application {
     }
     
     public static void main(String[] args) {
+        showUIOnStart = !Arrays.asList(args).contains("--verificar");
         try {
             serverSocket = new ServerSocket(SINGLE_INSTANCE_PORT);
+            // Se chegou aqui, é a primeira instância ("servidor").
+            
             Thread listenerThread = new Thread(() -> {
-                // O loop verifica se o socket ainda está aberto
                 while (serverSocket != null && !serverSocket.isClosed()) {
                     try (Socket clientSocket = serverSocket.accept();
-                        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
                         String command = in.readLine();
                         if (SINGLE_INSTANCE_COMMAND.equals(command)) {
                             if (instance != null) {
@@ -92,21 +101,19 @@ public class MainApp extends Application {
                             }
                         }
                     } catch (IOException e) {
-                        // Se o socket foi fechado enquanto estava no accept(),
-                        // a exceção é esperada. Verificamos novamente a condição do loop.
                         if (serverSocket.isClosed()) {
                             System.out.println("Thread de escuta encerrada pois o socket foi fechado.");
-                            break; // Sai do loop explicitamente
+                            break;
                         }
                         e.printStackTrace();
                     }
                 }
             });
 
-            // Marca a thread como daemon para não impedir o encerramento do app
             listenerThread.setDaemon(true);
             listenerThread.start();
             launch(args);
+
         } catch (BindException e) {
             System.out.println("Instância já em execução. Enviando comando para mostrar a janela.");
             try (Socket clientSocket = new Socket("localhost", SINGLE_INSTANCE_PORT);
