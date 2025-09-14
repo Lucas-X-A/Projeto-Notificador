@@ -19,12 +19,6 @@ import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.controlsfx.control.Notifications;
-
-import javafx.application.Platform;
-import javafx.geometry.Pos;
-import javafx.util.Duration;
-
 public class Notificador {
 
     private static Notificador instance; // A única instância da classe
@@ -140,20 +134,13 @@ public class Notificador {
 
             LocalDate hoje = LocalDate.now();
             if (ultimaDataNotificada == null || !ultimaDataNotificada.equals(hoje)) {
-                Platform.runLater(() -> {
-                    String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
-                    String textoNotificacao = "Clique no ícone na bandeja para ver os detalhes.";
-                    if (instancias.size() == 1) {
-                        tituloNotificacao = "Compromisso para Hoje";
-                        textoNotificacao = instancias.get(0).getTitulo();
-                    }
-                    Notifications.create()
-                        .title(tituloNotificacao)
-                        .text(textoNotificacao)
-                        .position(Pos.BOTTOM_RIGHT)
-                        .hideAfter(Duration.seconds(15))
-                        .showInformation();
-                });
+                String tituloNotificacao = "Você tem " + instancias.size() + " compromissos hoje.";
+                String textoNotificacao = "Clique no ícone na bandeja para ver os detalhes.";
+                if (instancias.size() == 1) {
+                    tituloNotificacao = "Compromisso para Hoje";
+                    textoNotificacao = instancias.get(0).getTitulo();
+                }
+                trayIcon.displayMessage(tituloNotificacao, textoNotificacao, TrayIcon.MessageType.INFO);
                 ultimaDataNotificada = hoje;
             } 
         } catch (AWTException e) {
@@ -168,7 +155,7 @@ public class Notificador {
         if (trayIcon != null) {
             SystemTray tray = SystemTray.getSystemTray();
             tray.remove(trayIcon);
-            trayIcon = null; // Essencial para que isTrayIconActive() retorne false
+            trayIcon = null;
         }
     }
 
