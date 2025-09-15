@@ -69,12 +69,14 @@ public class Compromisso {
         LocalDate dataIteracao = this.data;
         while (!dataIteracao.isAfter(dataFimRecorrencia)) {
             totalOcorrencias++;
-            if (recorrencia == TipoRecorrencia.SEMANAL) {
+            if (recorrencia == TipoRecorrencia.DIARIO) {
+                dataIteracao = dataIteracao.plusDays(1);
+            } else if (recorrencia == TipoRecorrencia.SEMANAL) {
                 dataIteracao = dataIteracao.plusWeeks(1);
             } else if (recorrencia == TipoRecorrencia.MENSAL) {
                 dataIteracao = dataIteracao.plusMonths(1);
             } else {
-                break;
+                break; // Tipo de recorrência desconhecido
             }
         }
 

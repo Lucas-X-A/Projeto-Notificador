@@ -281,7 +281,9 @@ public class MainController {
                     }
 
                     // Avança para a próxima data de recorrência
-                    if (c.getRecorrencia() == TipoRecorrencia.SEMANAL) {
+                    if (c.getRecorrencia() == TipoRecorrencia.DIARIO) {
+                        dataIteracao = dataIteracao.plusDays(1);
+                    } else if (c.getRecorrencia() == TipoRecorrencia.SEMANAL) {
                         dataIteracao = dataIteracao.plusWeeks(1);
                     } else if (c.getRecorrencia() == TipoRecorrencia.MENSAL) {
                         dataIteracao = dataIteracao.plusMonths(1);

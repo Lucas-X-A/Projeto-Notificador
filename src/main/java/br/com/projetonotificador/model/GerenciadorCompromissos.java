@@ -30,7 +30,6 @@ public class GerenciadorCompromissos {
         Path dir;
         // Lê a propriedade de sistema 'app.env' para determinar o ambiente.
         String env = System.getProperty("app.env");
-        // Se a propriedade for 'dev', estamos no modo de desenvolvimento.
         if ("dev".equals(env)) {
             // MODO DE DESENVOLVIMENTO: Salva na pasta 'data' local do projeto
             dir = Paths.get(NOME_PASTA_DEV_DATA);

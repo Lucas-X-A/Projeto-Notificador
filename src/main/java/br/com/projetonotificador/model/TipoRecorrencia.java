@@ -2,6 +2,7 @@ package br.com.projetonotificador.model;
 
 public enum TipoRecorrencia {
     NAO_RECORRENTE("Não Recorrente"),
+    DIARIO("Diário"),
     SEMANAL("Semanal"),
     MENSAL("Mensal");
 

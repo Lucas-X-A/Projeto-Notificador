@@ -220,13 +220,13 @@ public class ConcluidosController {
     private void atualizarListaConcluidos() {
         List<CompromissoInstancia> todasAsInstanciasConcluidas = new ArrayList<>();
 
-        // 1. Carrega os compromissos que foram totalmente concluídos
+        // Carrega os compromissos que foram totalmente concluídos
         List<Compromisso> concluidosTotalmente = gerenciador.carregarCompromissosConcluidos();
         for (Compromisso c : concluidosTotalmente) {
             todasAsInstanciasConcluidas.add(new CompromissoInstancia(c, c.getData()));
         }
 
-        // 2. Carrega os compromissos ativos para encontrar instâncias concluídas de tarefas recorrentes
+        // Carrega os compromissos ativos para encontrar instâncias concluídas de tarefas recorrentes
         List<Compromisso> ativos = gerenciador.carregarCompromissos();
         for (Compromisso c : ativos) {
             if (c.getRecorrencia() != TipoRecorrencia.NAO_RECORRENTE && c.getDatasConcluidas() != null) {
@@ -236,10 +236,10 @@ public class ConcluidosController {
             }
         }
 
-        // 3. Ordena a lista combinada por data
+        // Ordena a lista combinada por data
         todasAsInstanciasConcluidas.sort(Comparator.comparing(CompromissoInstancia::getDataDaInstancia));
 
-        // 4. Atualiza a UI
+        // Atualiza a UI
         compromissosConcluidosVisiveis.setAll(todasAsInstanciasConcluidas);
     }
 }
