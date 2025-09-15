@@ -26,7 +26,7 @@ public class UpdateChecker {
     private static final String GITHUB_REPO = "Projeto-Notificador";
     
     // Esta é a versão ATUAL da sua aplicação. Você deve atualizar esta linha a cada nova release.
-    private static final String CURRENT_VERSION = "2.1.2"; 
+    private static final String CURRENT_VERSION = "2.1.3"; 
 
     // URL da API do GitHub para obter a última release
     private static final String GITHUB_API_URL = "https://api.github.com/repos/" + GITHUB_USER + "/" + GITHUB_REPO + "/releases/latest";
